@@ -1,0 +1,21 @@
+{
+  "name": "express-amplify-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "./scripts/build.sh",
+    "serve": "node .amplify-hosting/compute/default/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-qbusiness": "^3.474.0",
+    "@aws-sdk/client-secrets-manager": "^3.844.0",
+    "dotenv": "^16.3.1",
+    "express": "^5.1.0"
+  }
+}

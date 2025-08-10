@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Complete Q Business Public Sector Application with S3 theme assets, Secrets Manager, and customized web experience
+
+Parameters:
+  QBusinessApplicationName:
+    Description: The name of the Q Business Application
+    Type: String
+    Default: QBusinessPublicSectorApp
+  
+  SessionDurationMinutes:
+    Description: Session duration in minutes for anonymous users
+    Type: Number
+    Default: 60
+    MinValue: 15
+    MaxValue: 60
+  
+  ThemeBucketName:
+    Description: S3 bucket name for theme assets (must be globally unique)
+    Type: String
+    Default: amazon-q-business-ui-customizations
+    AllowedPattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
+    ConstraintDescription: Must be a valid S3 bucket name
+
+Resources:
+  # IAM Role for Q Business Web Experience
+  QBusinessWebExperienceServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: 
+              Service: application.qbusiness.amazonaws.com
+            Action: 
+              - 'sts:AssumeRole'
+              - 'sts:SetContext'              
+            Condition:
+              StringEquals: 
+                "aws:SourceAccount": !Sub "${AWS::AccountId}"
+              ArnLike: 
+                "aws:SourceArn": !Sub "arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}"
+      Path: /service-role/
+      ManagedPolicyArns:
+        - !Ref QBusinessWebExperienceServiceManagedPolicy
+      
+  # Managed Policy for Web Experience
+  QBusinessWebExperienceServiceManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:      
+      Description: Q Web Experience Managed Policy
+      Path: /service-role/
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: 
+            - "qbusiness:Chat"
+            - "qbusiness:ChatSync"
+            - "qbusiness:PutFeedback"
+            - "qbusiness:GetWebExperience"
+            - "qbusiness:GetApplication"
+            - "qbusiness:GetChatControlsConfiguration"           
+            Resource: !Sub "arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}"
+
+  # Q Business Application with Anonymous access
+  QBusinessApp:
+    Type: AWS::QBusiness::Application
+    Properties:
+      DisplayName: !Ref QBusinessApplicationName
+      Description: Q Business Application with Anonymous access
+      IdentityType: ANONYMOUS
+      RoleArn: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/qbusiness.amazonaws.com/AWSServiceRoleForQBusiness
+
+  # Q Business Index
+  QBusinessIndex:
+    Type: AWS::QBusiness::Index
+    Properties:
+     ApplicationId: !GetAtt QBusinessApp.ApplicationId
+     DisplayName: qbusiness-index
+     Type: STARTER
+
+  # Q Business Retriever
+  QBusinessRetriver:
+    Type: AWS::QBusiness::Retriever
+    Properties:
+     ApplicationId: !GetAtt QBusinessApp.ApplicationId
+     Configuration:
+      NativeIndexConfiguration:
+        IndexId: !GetAtt QBusinessIndex.IndexId
+     DisplayName: qbusiness-retriever
+     Type: NATIVE_INDEX
+
+  # S3 Bucket for Theme Assets
+  ThemeAssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref ThemeBucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      VersioningConfiguration:
+        Status: Enabled
+
+  # S3 Bucket Policy for Q Business Access
+  ThemeAssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ThemeAssetsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: application.qbusiness.amazonaws.com
+            Action: s3:GetObject
+            Resource:
+              - !Sub '${ThemeAssetsBucket.Arn}/public-sector-theme.css'
+              - !Sub '${ThemeAssetsBucket.Arn}/aws-logo.png'
+              - !Sub '${ThemeAssetsBucket.Arn}/AmazonEmber_Bd.ttf'
+              - !Sub '${ThemeAssetsBucket.Arn}/favicon.ico'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'true'
+
+  # Secrets Manager Secret for Q Business Configuration
+  QBusinessConfigSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: qbusiness-config
+      Description: Q Business Application and Web Experience IDs for Amplify app
+      SecretString: !Sub |
+        {
+          "QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}",
+          "QBUSINESS_WEB_EXP_ID": "${QBusinessWebExperience}"
+        }
+
+  # Q Business Web Experience with Government Customization
+  QBusinessWebExperience:
+    Type: AWS::QBusiness::WebExperience
+    DependsOn: [ThemeAssetsBucket, ThemeAssetsBucketPolicy]
+    Properties:
+     ApplicationId: !GetAtt QBusinessApp.ApplicationId
+     RoleArn: !GetAtt QBusinessWebExperienceServiceRole.Arn
+     Title: Demo Government AI Assistant
+     Subtitle: Providing secure information access for public sector agencies
+     WelcomeMessage: Welcome to your secure AI assistant. I can help you find information from approved government resources. How may I assist you today?
+     SamplePromptsControlMode: ENABLED
+     CustomizationConfiguration:
+       CustomCSSUrl: !Sub 'https://${ThemeBucketName}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css'
+
+Outputs:
+  QBusinessApplicationId:
+    Description: The ID of the QBusiness application
+    Value: !GetAtt QBusinessApp.ApplicationId
+    Export:
+      Name: !Sub '${AWS::StackName}-QBusinessAppId'
+    
+  QBusinessWebExperienceId:
+    Description: The ID of the QBusiness web experience
+    Value: !Ref QBusinessWebExperience
+    Export:
+      Name: !Sub '${AWS::StackName}-QBusinessWebExpId'
+  
+  ThemeBucketName:
+    Description: S3 bucket name for theme assets
+    Value: !Ref ThemeAssetsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-ThemeBucket'
+  
+  SecretsManagerSecretName:
+    Description: Name of the Secrets Manager secret containing Q Business configuration
+    Value: !Ref QBusinessConfigSecret
+    Export:
+      Name: !Sub '${AWS::StackName}-SecretName'
+  
+  NextSteps:
+    Description: Instructions for completing the deployment
+    Value: |
+      1. Upload theme assets to the S3 bucket using the provided script
+      2. Follow AMPLIFY-SETUP.md to deploy the web application
+      3. Add your Amplify domain to Q Business allowed URLs
