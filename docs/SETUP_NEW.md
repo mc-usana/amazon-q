@@ -10,37 +10,24 @@ Use this guide if you need to create Q Business resources from scratch.
 
 ## Complete Setup
 
-### 1. Deploy Infrastructure
-
-Use the CloudFormation template to create all required resources:
+### 1. Run Unified Deploy Script
 
 ```bash
-aws cloudformation deploy \
-  --template-file infrastructure/cloudformation.yaml \
-  --stack-name qbusiness-public-sector \
-  --parameter-overrides \
-    QBusinessApplicationName="Government AI Assistant" \
-    ThemeBucketName="your-unique-bucket-name-$(date +%s)" \
-  --capabilities CAPABILITY_IAM
+./scripts/deploy.sh
 ```
 
-### 2. Upload Theme Assets
+When prompted:
+1. Answer **"n"** when asked if you have existing Q Business resources
+2. Enter application name (or press Enter for default)
+3. Confirm deployment
 
-```bash
-./scripts/upload-theme-assets.sh qbusiness-public-sector
-```
+This will:
+- Deploy complete CloudFormation infrastructure
+- Upload theme assets automatically
+- Create local `.env` file for testing
+- Display your configuration
 
-### 3. Get Your Configuration
-
-The CloudFormation stack outputs contain your IDs:
-
-```bash
-aws cloudformation describe-stacks \
-  --stack-name qbusiness-public-sector \
-  --query 'Stacks[0].Outputs'
-```
-
-### 4. Test Locally
+### 2. Test Locally
 
 ```bash
 npm install
@@ -49,7 +36,7 @@ npm start
 
 Visit `http://localhost:3000` to verify the setup.
 
-### 5. Deploy to Amplify
+### 3. Deploy to Amplify
 
 Follow the [Amplify Deployment Guide](AMPLIFY_SETUP.md) to deploy your application.
 

@@ -16,6 +16,9 @@ qbamplify/
 │   └── s3-bucket-policy.json # S3 bucket policy template
 ├── scripts/                # Build and deployment scripts
 │   ├── build.sh           # Amplify build script
+│   ├── cleanup.sh         # Resource cleanup script
+│   ├── deploy.sh          # Unified deployment script
+│   ├── deploy-infrastructure.sh # Legacy setup script
 │   ├── setup.sh           # Q Business setup script
 │   └── upload-theme-assets.sh # Theme upload script
 ├── assets/                 # Static assets

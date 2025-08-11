@@ -4,48 +4,38 @@
 
 This solution requires AWS infrastructure to be set up before deploying the Amplify application. You have two options:
 
-## Option 1: CloudFormation Template (Recommended)
+## Unified Deployment Script
 
-The `infrastructure/cloudformation.yaml` template creates all required resources:
+Use the single deployment script for all scenarios:
+
+```bash
+./scripts/deploy.sh
+```
+
+### What It Creates
+
+The script uses CloudFormation to create:
 
 - Q Business Application with anonymous access
 - Q Business Index and Retriever
 - Q Business Web Experience with government theming
 - S3 bucket for theme assets with proper policies
-- Secrets Manager secret for configuration
+- Secrets Manager secret with dynamic name
 - IAM roles and policies
 
-### Deploy Infrastructure
+### Dynamic Resource Naming
 
-```bash
-aws cloudformation deploy \
-  --template-file infrastructure/cloudformation.yaml \
-  --stack-name qbusiness-public-sector \
-  --parameter-overrides \
-    QBusinessApplicationName="Government AI Assistant" \
-    ThemeBucketName="your-unique-bucket-name" \
-  --capabilities CAPABILITY_IAM
-```
+- **Secret Name**: `qbusiness-config-{StackName}-{UniqueId}`
+- **Bucket Name**: `qbusiness-theme-{timestamp}`
+- **Stack Name**: `qbusiness-public-sector` (default)
 
-### Upload Theme Assets
+### For Existing Resources
 
-```bash
-./scripts/upload-theme-assets.sh qbusiness-public-sector
-```
-
-## Option 2: Manual Setup Script
-
-If you already have Q Business resources, use the manual setup script:
-
-```bash
-./scripts/deploy-infrastructure.sh
-```
-
-This script will:
-1. Create Secrets Manager secret with your Q Business IDs
+If you have existing Q Business resources, the script will:
+1. Create Secrets Manager secret with dynamic name
 2. Set up S3 bucket with proper policies
 3. Upload theme assets
-4. Configure Q Business web experience
+4. Configure your web experience with government styling
 
 ## What Gets Created
 

@@ -17,19 +17,18 @@ Deploy a government-themed Amazon Q Business web application with complete custo
 
 ## Quick Start
 
-Choose your setup path:
+**One command deployment:**
 
-### Option 1: I Have Q Business Resources
+```bash
+./scripts/deploy.sh
+```
 
-If you already have a Q Business Application ID and Web Experience ID:
+The script will ask if you have existing Q Business resources and guide you through setup.
 
-**[→ Setup with Existing Resources](docs/SETUP_EXISTING.md)**
+### Setup Paths
 
-### Option 2: I Need Q Business Resources
-
-If you need to create Q Business resources from scratch:
-
-**[→ Setup with New Resources](docs/SETUP_NEW.md)**
+- **[Existing Resources](docs/SETUP_EXISTING.md)** - Use existing Q Business Application/Web Experience
+- **[New Resources](docs/SETUP_NEW.md)** - Create everything from scratch
 
 ## What You Get
 
@@ -97,9 +96,11 @@ Visit `http://localhost:3000` to test locally.
 
 ## Deployment
 
-1. **Setup**: Follow one of the setup guides above
-2. **Deploy**: Use the [Amplify Deployment Guide](docs/AMPLIFY_SETUP.md)
-3. **Customize**: Follow the [Customization Guide](docs/CUSTOMIZATION.md)
+1. **Deploy Infrastructure**: `./scripts/deploy.sh`
+2. **Test Locally**: `npm install && npm start`
+3. **Deploy to Amplify**: Follow [Amplify Guide](docs/AMPLIFY_SETUP.md)
+4. **Customize**: Follow [Customization Guide](docs/CUSTOMIZATION.md)
+5. **Cleanup**: `./scripts/cleanup.sh` (when needed)
 
 ## Support
 

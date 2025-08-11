@@ -11,33 +11,23 @@ Use this guide if you already have a Q Business Application ID and Web Experienc
 
 ## Quick Setup
 
-### 1. Configure Your IDs
-
-Create or update `config/.env`:
+### 1. Run Unified Deploy Script
 
 ```bash
-SECRET_NAME=qbusiness-config
-AWS_REGION=us-east-1
-SESSION_DURATION_MINUTES=15
+./scripts/deploy.sh
 ```
 
-### 2. Store Configuration Securely
-
-Run the setup script with your existing IDs:
-
-```bash
-./scripts/deploy-infrastructure.sh
-```
-
-When prompted, enter:
-- Your Q Business Application ID
-- Your Web Experience ID
+When prompted:
+1. Answer **"y"** when asked if you have existing Q Business resources
+2. Enter your Q Business Application ID
+3. Enter your Web Experience ID
 
 This will:
-- Create AWS Secrets Manager secret
+- Create AWS Secrets Manager secret with dynamic name
 - Set up S3 bucket for theme assets
 - Upload government theme files
 - Configure your web experience with government styling
+- Create local `.env` file for testing
 
 ### 3. Test Locally
 

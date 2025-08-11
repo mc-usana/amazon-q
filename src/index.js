@@ -70,14 +70,14 @@ app.get('/', noCacheMiddleware, async (req, res) => {
     const command = new CreateAnonymousWebExperienceUrlCommand({
       applicationId: qbusinessConfig.QBUSINESS_APP_ID,
       webExperienceId: qbusinessConfig.QBUSINESS_WEB_EXP_ID,
-      sessionDurationInMinutes: parseInt(process.env.SESSION_DURATION_MINUTES || '60', 10)
+      sessionDurationInMinutes: parseInt(process.env.SESSION_DURATION_MINUTES || '15', 10)
     });
     const response = await client.send(command);
     const anonymousUrl = response.anonymousUrl;
     
     // Track session
-    const sessionId = sessionManager.create(parseInt(process.env.SESSION_DURATION_MINUTES || '60', 10));
-    const sessionDuration = parseInt(process.env.SESSION_DURATION_MINUTES || '60', 10);
+    const sessionDuration = parseInt(process.env.SESSION_DURATION_MINUTES || '15', 10);
+    const sessionId = sessionManager.create(sessionDuration);
     
     // Send HTML with the iframe already configured
     res.send(`
@@ -99,7 +99,7 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   <div class="status">
                       <div class="status-left">
                           <div class="status-dot"></div>
-                          <span id="timer">Session expires in ${parseInt(process.env.SESSION_DURATION_MINUTES || '60', 10)}:00</span>
+                          <span id="timer">Session expires in ${sessionDuration}:00</span>
                       </div>
                       <a href="javascript:location.reload()" class="btn">New Session</a>
                   </div>
