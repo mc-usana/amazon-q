@@ -1,7 +1,7 @@
 # Amazon Q Business Government Web Application
 
 [![License](https://img.shields.io/badge/License-MIT--0-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 [![AWS Amplify](https://img.shields.io/badge/AWS-Amplify-orange.svg)](https://aws.amazon.com/amplify/)
 
 Deploy a government-themed Amazon Q Business web application with complete customization and server-side rendering on AWS Amplify.
@@ -75,7 +75,7 @@ qbamplify/
 ## Prerequisites
 
 - AWS Account with appropriate permissions
-- Node.js 18+ installed locally
+- Node.js 22+ installed locally
 - AWS CLI configured
 - Git repository
 

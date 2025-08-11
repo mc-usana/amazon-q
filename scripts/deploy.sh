@@ -94,7 +94,7 @@ if [[ "$HAS_EXISTING" =~ ^[Yy]$ ]]; then
 else
     aws cloudformation describe-stacks \
       --stack-name "$STACK_NAME" \
-      --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId` || OutputKey==`QBusinessWebExperienceId`].[OutputKey,OutputValue]' \
+      --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId` || OutputKey==`QBusinessWebExperienceId` || OutputKey==`AmplifyComputeRoleArn`].[OutputKey,OutputValue]' \
       --output table \
       --region "$AWS_REGION"
 fi

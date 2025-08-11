@@ -158,6 +158,34 @@ Resources:
      CustomizationConfiguration:
        CustomCSSUrl: !Sub 'https://${ThemeBucketName}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css'
 
+  # IAM Role for Amplify Compute
+  AmplifyComputeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-AmplifyComputeRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: QBusinessAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: qbusiness:CreateAnonymousWebExperienceUrl
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}'
+                  - !Sub 'arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}/web-experience/${QBusinessWebExperience}'
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref QBusinessConfigSecret
+
 Outputs:
   QBusinessApplicationId:
     Description: The ID of the QBusiness application
@@ -183,9 +211,16 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-SecretName'
   
+  AmplifyComputeRoleArn:
+    Description: ARN of the IAM role for Amplify Compute
+    Value: !GetAtt AmplifyComputeRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-AmplifyRoleArn'
+  
   NextSteps:
     Description: Instructions for completing the deployment
     Value: |
       1. Upload theme assets to the S3 bucket using the provided script
       2. Follow AMPLIFY-SETUP.md to deploy the web application
-      3. Add your Amplify domain to Q Business allowed URLs
+      3. Use the AmplifyComputeRoleArn output for the Amplify IAM role
+      4. Add your Amplify domain to Q Business allowed URLs
