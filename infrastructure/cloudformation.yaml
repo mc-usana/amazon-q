@@ -62,9 +62,9 @@ Resources:
             - "qbusiness:Chat"
             - "qbusiness:ChatSync"
             - "qbusiness:PutFeedback"
-            # - "qbusiness:GetWebExperience"
-            # - "qbusiness:GetApplication"
-            # - "qbusiness:GetChatControlsConfiguration"           
+            - "qbusiness:GetWebExperience"
+            - "qbusiness:GetApplication"
+            - "qbusiness:GetChatControlsConfiguration"           
             Resource: !Sub "arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}"
 
   # Q Business Application with Anonymous access
