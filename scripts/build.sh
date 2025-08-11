@@ -11,7 +11,9 @@ fi
 mkdir -p ./.amplify-hosting/compute/default
 
 # Copy source files
-cp ./src/index-simple.js ./.amplify-hosting/compute/default/index.js
+cp ./src/index.js ./.amplify-hosting/compute/default/
+cp ./src/utils.js ./.amplify-hosting/compute/default/
+cp ./src/secrets.js ./.amplify-hosting/compute/default/
 
 # Copy node_modules for deployment
 cp -r ./node_modules ./.amplify-hosting/compute/default/node_modules
