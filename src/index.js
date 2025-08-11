@@ -76,12 +76,8 @@ app.get('/', noCacheMiddleware, async (req, res) => {
     const anonymousUrl = response.anonymousUrl;
     
     // Track session
-    const sessionId = Date.now().toString();
+    const sessionId = sessionManager.create(parseInt(process.env.SESSION_DURATION_MINUTES || '60', 10));
     const sessionDuration = parseInt(process.env.SESSION_DURATION_MINUTES || '60', 10);
-    sessions.set(sessionId, {
-      createdAt: Date.now(),
-      durationMinutes: sessionDuration
-    });
     
     // Send HTML with the iframe already configured
     res.send(`
@@ -179,16 +175,8 @@ app.get('/', noCacheMiddleware, async (req, res) => {
 
 // Session status endpoint
 app.get('/api/session-status/:sessionId', (req, res) => {
-  const session = sessions.get(req.params.sessionId);
-  if (!session) {
-    return res.json({ remainingSeconds: 0 });
-  }
-  
-  const elapsed = Math.floor((Date.now() - session.createdAt) / 1000);
-  const totalSeconds = session.durationMinutes * 60;
-  const remainingSeconds = Math.max(0, totalSeconds - elapsed);
-  
-  res.json({ remainingSeconds });
+  const status = sessionManager.getStatus(req.params.sessionId);
+  res.json(status);
 });
 
 // Health check endpoint

@@ -5,7 +5,9 @@ Parameters:
   QBusinessApplicationName:
     Description: The name of the Q Business Application
     Type: String
-    Default: QBusinessPublicSectorApp
+    Default: GovernmentAIAssistant
+    AllowedPattern: ^[a-zA-Z0-9][a-zA-Z0-9_-]*$
+    ConstraintDescription: Must contain only alphanumeric characters, hyphens, and underscores
   
   SessionDurationMinutes:
     Description: Session duration in minutes for anonymous users
@@ -20,6 +22,8 @@ Parameters:
     Default: amazon-q-business-ui-customizations
     AllowedPattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
     ConstraintDescription: Must be a valid S3 bucket name
+  
+
 
 Resources:
   # IAM Role for Q Business Web Experience
@@ -58,9 +62,9 @@ Resources:
             - "qbusiness:Chat"
             - "qbusiness:ChatSync"
             - "qbusiness:PutFeedback"
-            - "qbusiness:GetWebExperience"
-            - "qbusiness:GetApplication"
-            - "qbusiness:GetChatControlsConfiguration"           
+            # - "qbusiness:GetWebExperience"
+            # - "qbusiness:GetApplication"
+            # - "qbusiness:GetChatControlsConfiguration"           
             Resource: !Sub "arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}"
 
   # Q Business Application with Anonymous access
@@ -129,7 +133,10 @@ Resources:
   QBusinessConfigSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: qbusiness-config
+      Name: !Sub 
+        - 'qbusiness-config-${StackName}-${UniqueId}'
+        - StackName: !Ref 'AWS::StackName'
+          UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
       Description: Q Business Application and Web Experience IDs for Amplify app
       SecretString: !Sub |
         {
