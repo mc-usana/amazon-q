@@ -13,7 +13,7 @@
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-qbusiness": "^3.474.0",
