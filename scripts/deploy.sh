@@ -76,7 +76,7 @@ else
       --parameter-overrides \
         QBusinessApplicationName="$APP_NAME" \
         ThemeBucketName="$BUCKET_NAME" \
-      --capabilities CAPABILITY_IAM \
+      --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
       --region "$AWS_REGION"
     
     echo "✅ Infrastructure deployed successfully!"

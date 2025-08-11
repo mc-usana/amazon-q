@@ -31,20 +31,11 @@ cat > ./.amplify-hosting/compute/default/package.json << EOL
 }
 EOL
 
-# Get secret name from CloudFormation if available
-if [ -n "$STACK_NAME" ]; then
-  SECRET_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' --output text 2>/dev/null || echo "qbusiness-config")
-else
-  SECRET_NAME=${SECRET_NAME:-"qbusiness-config"}
-fi
-
-# Create environment file
+# Create environment file using Amplify environment variables
 cat > ./.amplify-hosting/compute/default/.env << EOL
-SECRET_NAME=${SECRET_NAME}
-QBUSINESS_APP_ID=${QBUSINESS_APP_ID}
-QBUSINESS_WEB_EXP_ID=${QBUSINESS_WEB_EXP_ID}
+SECRET_NAME=${SECRET_NAME:-qbusiness-config}
 AWS_REGION=${AWS_REGION:-us-east-1}
-SESSION_DURATION_MINUTES=${SESSION_DURATION_MINUTES}
+SESSION_DURATION_MINUTES=${SESSION_DURATION_MINUTES:-15}
 EOL
 
 # Optional: Run complete Q Business setup during Amplify build
