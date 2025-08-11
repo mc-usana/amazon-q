@@ -60,11 +60,20 @@ app.use(express.json());
 
 // Homepage with server-side rendering
 app.get('/', noCacheMiddleware, async (req, res) => {
+  console.log('🚀 Starting request processing...');
   
   try {
+    console.log('📋 Environment check:', {
+      SECRET_NAME: process.env.SECRET_NAME,
+      AWS_REGION: process.env.AWS_REGION,
+      SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES
+    });
+    
     // Get Q Business configuration from Secrets Manager
     if (!qbusinessConfig) {
+      console.log('🔐 Getting Q Business config from Secrets Manager...');
       qbusinessConfig = await getQBusinessConfig();
+      console.log('✅ Q Business config retrieved:', qbusinessConfig);
     }
     
     const command = new CreateAnonymousWebExperienceUrlCommand({
@@ -155,7 +164,12 @@ app.get('/', noCacheMiddleware, async (req, res) => {
       </html>
     `);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Detailed Error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
     res.status(500).send(`
       <!DOCTYPE html>
       <html>
