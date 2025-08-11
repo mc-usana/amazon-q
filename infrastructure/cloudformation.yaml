@@ -220,7 +220,10 @@ Outputs:
   
   SecretsManagerSecretName:
     Description: Name of the Secrets Manager secret containing Q Business configuration
-    Value: !Ref QBusinessConfigSecret
+    Value: !Sub 
+      - 'qbusiness-config-${StackName}-${UniqueId}'
+      - StackName: !Ref 'AWS::StackName'
+        UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
     Export:
       Name: !Sub '${AWS::StackName}-SecretName'
   

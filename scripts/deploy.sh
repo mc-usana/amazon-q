@@ -102,11 +102,14 @@ fi
 echo ""
 # Create local .env file with actual secret name
 echo "📝 Creating local .env file..."
-SECRET_NAME_ACTUAL=$(aws cloudformation describe-stacks \
+SECRET_ARN=$(aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" \
   --region "$AWS_REGION" \
   --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' \
   --output text)
+
+# Extract just the secret name from the ARN (remove the random suffix AWS adds)
+SECRET_NAME_ACTUAL=$(echo "$SECRET_ARN" | sed 's/.*secret:\([^-]*-[^-]*-[^-]*-[^-]*\).*/\1/')
 
 cat > config/.env << EOL
 SECRET_NAME=$SECRET_NAME_ACTUAL
