@@ -60,20 +60,10 @@ app.use(express.json());
 
 // Homepage with server-side rendering
 app.get('/', noCacheMiddleware, async (req, res) => {
-  console.log('🚀 Starting request processing...');
-  
   try {
-    console.log('📋 Environment check:', {
-      SECRET_NAME: process.env.SECRET_NAME,
-      AWS_REGION: process.env.AWS_REGION,
-      SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES
-    });
-    
     // Get Q Business configuration from Secrets Manager
     if (!qbusinessConfig) {
-      console.log('🔐 Getting Q Business config from Secrets Manager...');
       qbusinessConfig = await getQBusinessConfig();
-      console.log('✅ Q Business config retrieved:', qbusinessConfig);
     }
     
     const command = new CreateAnonymousWebExperienceUrlCommand({
@@ -164,39 +154,24 @@ app.get('/', noCacheMiddleware, async (req, res) => {
       </html>
     `);
   } catch (error) {
-    const errorDetails = {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      code: error.code,
-      environment: {
-        SECRET_NAME: process.env.SECRET_NAME,
-        AWS_REGION: process.env.AWS_REGION,
-        SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES
-      }
-    };
-    
-    console.error('❌ Detailed Error:', errorDetails);
+    console.error('Error:', error.message);
     
     res.status(500).send(`
       <!DOCTYPE html>
       <html>
       <head>
-          <title>QBusiness Anonymous Chat - Error</title>
+          <title>AI Assistant - Error</title>
           <style>
               body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-              .error { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; }
-              pre { background: #f0f0f0; padding: 10px; overflow: auto; }
+              .error { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; text-align: center; }
           </style>
       </head>
       <body>
           <div class="error">
-              <h2>Server Error Details</h2>
-              <pre>${JSON.stringify(errorDetails, null, 2)}</pre>
+              <h2>Service Temporarily Unavailable</h2>
+              <p>Please try again in a few moments or contact your IT administrator.</p>
+              <a href="/">Retry</a>
           </div>
-          <script>
-              console.error('Server Error:', ${JSON.stringify(errorDetails)});
-          </script>
       </body>
       </html>
     `);
@@ -216,11 +191,11 @@ app.get('/health', (req, res) => {
 
 // Global error handler
 process.on('uncaughtException', (error) => {
-  console.error('🚨 Uncaught Exception:', error);
+  console.error('Uncaught Exception:', error.message);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
 });
 
 // Start the server if this file is run directly
@@ -230,12 +205,7 @@ const isMainModule = import.meta.url.endsWith(process.argv[1].replace(/^file:\/\
 if (isMainModule) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
-    console.log(`🚀 Server is running on port ${port}`);
-    console.log('📋 Environment:', {
-      SECRET_NAME: process.env.SECRET_NAME,
-      AWS_REGION: process.env.AWS_REGION,
-      SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES
-    });
+    console.log(`Server running on port ${port}`);
   });
 }
 
