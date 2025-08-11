@@ -138,11 +138,9 @@ Resources:
         - StackName: !Ref 'AWS::StackName'
           UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
       Description: Q Business Application and Web Experience IDs for Amplify app
-      SecretString: !Sub |
-        {
-          "QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}",
-          "QBUSINESS_WEB_EXP_ID": "${QBusinessWebExperience}"
-        }
+      SecretString: !Sub 
+        - '{"QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}", "QBUSINESS_WEB_EXP_ID": "${WebExperienceId}"}'
+        - WebExperienceId: !Select [1, !Split ['|', !Ref QBusinessWebExperience]]
 
   # Q Business Web Experience with Government Customization
   QBusinessWebExperience:
