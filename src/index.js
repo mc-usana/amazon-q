@@ -164,12 +164,20 @@ app.get('/', noCacheMiddleware, async (req, res) => {
       </html>
     `);
   } catch (error) {
-    console.error('❌ Detailed Error:', {
+    const errorDetails = {
       message: error.message,
       stack: error.stack,
       name: error.name,
-      code: error.code
-    });
+      code: error.code,
+      environment: {
+        SECRET_NAME: process.env.SECRET_NAME,
+        AWS_REGION: process.env.AWS_REGION,
+        SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES
+      }
+    };
+    
+    console.error('❌ Detailed Error:', errorDetails);
+    
     res.status(500).send(`
       <!DOCTYPE html>
       <html>
@@ -177,10 +185,18 @@ app.get('/', noCacheMiddleware, async (req, res) => {
           <title>QBusiness Anonymous Chat - Error</title>
           <style>
               body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+              .error { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; }
+              pre { background: #f0f0f0; padding: 10px; overflow: auto; }
           </style>
       </head>
       <body>
-          <div>Error loading QBusiness Anonymous Chat. See logs for more details.</div>
+          <div class="error">
+              <h2>Server Error Details</h2>
+              <pre>${JSON.stringify(errorDetails, null, 2)}</pre>
+          </div>
+          <script>
+              console.error('Server Error:', ${JSON.stringify(errorDetails)});
+          </script>
       </body>
       </html>
     `);
@@ -198,6 +214,15 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
+// Global error handler
+process.on('uncaughtException', (error) => {
+  console.error('🚨 Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // Start the server if this file is run directly
 // In ES modules, we can check if this is the main module by comparing import.meta.url
 const isMainModule = import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ''));
@@ -205,7 +230,12 @@ const isMainModule = import.meta.url.endsWith(process.argv[1].replace(/^file:\/\
 if (isMainModule) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`🚀 Server is running on port ${port}`);
+    console.log('📋 Environment:', {
+      SECRET_NAME: process.env.SECRET_NAME,
+      AWS_REGION: process.env.AWS_REGION,
+      SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES
+    });
   });
 }
 
