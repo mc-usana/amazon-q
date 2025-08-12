@@ -32,12 +32,15 @@ cat > ./.amplify-hosting/compute/default/package.json << EOL
 }
 EOL
 
-# Create environment file using Amplify environment variables
+# Create environment file using Amplify build-time environment variables
 cat > ./.amplify-hosting/compute/default/.env << EOL
 SECRET_NAME=${SECRET_NAME:-qbusiness-config}
 AWS_REGION=${AWS_REGION:-us-east-1}
 SESSION_DURATION_MINUTES=${SESSION_DURATION_MINUTES:-15}
 EOL
+
+echo "Environment variables written to .env:"
+cat ./.amplify-hosting/compute/default/.env
 
 # Optional: Run complete Q Business setup during Amplify build
 if [ "$CUSTOMIZE_WEB_EXPERIENCE" = "true" ]; then

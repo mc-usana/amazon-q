@@ -1,7 +1,11 @@
 import { QBusinessClient, CreateAnonymousWebExperienceUrlCommand } from '@aws-sdk/client-qbusiness';
 import express from 'express';
+import * as dotenv from 'dotenv';
 import { getStyles } from './utils.js';
 import { getQBusinessConfig } from './secrets.js';
+
+// Load environment variables from .env file (created by build script)
+dotenv.config();
 
 // Configure AWS SDK client to use the default credential provider chain
 // This will automatically use the IAM role associated with the Amplify Compute environment
