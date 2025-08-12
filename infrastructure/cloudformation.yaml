@@ -19,11 +19,29 @@ Parameters:
   ThemeBucketName:
     Description: S3 bucket name for theme assets (must be globally unique)
     Type: String
-    Default: amazon-q-business-ui-customizations
+    Default: qbusiness-theme
     AllowedPattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
     ConstraintDescription: Must be a valid S3 bucket name
   
+  GitHubRepository:
+    Description: GitHub repository URL (optional - for automatic deployment)
+    Type: String
+    Default: ''
+  
+  GitHubAccessToken:
+    Description: GitHub personal access token (optional - for automatic deployment)
+    Type: String
+    Default: ''
+    NoEcho: true
+  
+  GitHubBranch:
+    Description: GitHub branch to deploy (optional - defaults to main)
+    Type: String
+    Default: main
 
+Conditions:
+  HasGitHubRepo: !Not [!Equals [!Ref GitHubRepository, '']]
+  HasGitHubToken: !Not [!Equals [!Ref GitHubAccessToken, '']]
 
 Resources:
   # IAM Role for Q Business Web Experience
@@ -99,7 +117,11 @@ Resources:
   ThemeAssetsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref ThemeBucketName
+      BucketName: !Sub 
+        - '${BucketName}-${StackName}-${UniqueId}'
+        - BucketName: !Ref ThemeBucketName
+          StackName: !Ref 'AWS::StackName'
+          UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -156,6 +178,31 @@ Resources:
      CustomizationConfiguration:
        CustomCSSUrl: !Sub 'https://${ThemeBucketName}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css'
 
+  # IAM Service Role for Amplify
+  AmplifyServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-AmplifyServiceRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: amplify.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatchLogsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:CreateLogGroup
+                  - logs:DescribeLogGroups
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*'
+
   # IAM Role for Amplify Compute
   AmplifyComputeRole:
     Type: AWS::IAM::Role
@@ -199,6 +246,59 @@ Resources:
                     - 'arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}/web-experience/${WebExperienceId}'
                     - WebExperienceId: !Select [1, !Split ['|', !Ref QBusinessWebExperience]]
 
+  # Amplify Application
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Sub '${AWS::StackName}-qbusiness-app'
+      Description: 'Q Business Anonymous Web Experience with Custom Theming'
+      Platform: WEB_COMPUTE
+      IAMServiceRole: !GetAtt AmplifyServiceRole.Arn
+      ComputeRoleArn: !GetAtt AmplifyComputeRole.Arn
+      Repository: !If [HasGitHubRepo, !Ref GitHubRepository, !Ref 'AWS::NoValue']
+      AccessToken: !If [HasGitHubToken, !Ref GitHubAccessToken, !Ref 'AWS::NoValue']
+      BuildSpec: |
+        version: 1
+        env:
+          variables:
+            SECRET_NAME: !Ref QBusinessConfigSecret
+            SESSION_DURATION_MINUTES: !Ref SessionDurationMinutes
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - nvm install 22
+                - nvm use 22
+                - node --version
+                - npm install
+            build:
+              commands:
+                - ./scripts/build.sh
+          artifacts:
+            baseDirectory: .amplify-hosting
+            files:
+              - '**/*'
+      EnvironmentVariables:
+        - Name: SECRET_NAME
+          Value: !Ref QBusinessConfigSecret
+        - Name: SESSION_DURATION_MINUTES
+          Value: !Ref SessionDurationMinutes
+      Tags:
+        - Key: Project
+          Value: QBusinessPublicSector
+        - Key: Environment
+          Value: Production
+
+  # Amplify Branch
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Condition: HasGitHubRepo
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref GitHubBranch
+      EnableAutoBuild: true
+      EnablePullRequestPreview: false
+
 Outputs:
   QBusinessApplicationId:
     Description: The ID of the QBusiness application
@@ -232,6 +332,25 @@ Outputs:
     Value: !GetAtt AmplifyComputeRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-AmplifyRoleArn'
+  
+  AmplifyAppId:
+    Description: Amplify App ID
+    Value: !GetAtt AmplifyApp.AppId
+    Export:
+      Name: !Sub '${AWS::StackName}-AmplifyAppId'
+  
+  AmplifyAppArn:
+    Description: Amplify App ARN
+    Value: !GetAtt AmplifyApp.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-AmplifyAppArn'
+  
+  AmplifyDefaultDomain:
+    Description: Amplify App Default Domain URL (add this to Q Business allowed websites)
+    Value: !Sub 'https://${GitHubBranch}.${AmplifyApp.AppId}.amplifyapp.com'
+    Condition: HasGitHubRepo
+    Export:
+      Name: !Sub '${AWS::StackName}-AmplifyDomain'
   
   NextSteps:
     Description: Instructions for completing the deployment
