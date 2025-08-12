@@ -6,9 +6,11 @@
 
 ## Introduction
 
-This scalable solution provides a customized Amazon Q Business web application designed to help public sector agencies securely fast-track their adoption of Generative AI.
+This scalable solution provides a customized Amazon Q Business web application designed to help public sector agencies securely accelerate their adoption of Generative AI.
 
-The application features custom theming, session management with visual timers, and mobile-responsive design.
+The application features **custom theming** for organizational branding and **automatic session management** that creates new anonymous chat sessions for each user visit.
+
+By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.aws.amazon.com/amazonq/latest/api-reference/API_CreateAnonymousWebExperienceUrl.html), the solution provides secure, temporary access without requiring user authentication.  
 
 ![Government AI Assistant](docs/images/amz-q-business-embedded-themed-homepage.png)
 
