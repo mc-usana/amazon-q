@@ -118,8 +118,8 @@ SESSION_DURATION_MINUTES=15
 EOL
 
 # Update amplify.yml with actual secret name
-sed -i.bak "s/SECRET_NAME: .*/SECRET_NAME: $SECRET_NAME_ACTUAL/" config/amplify.yml
-rm -f config/amplify.yml.bak
+sed -i.bak "s/SECRET_NAME: .*/SECRET_NAME: $SECRET_NAME_ACTUAL/" amplify.yml
+rm -f amplify.yml.bak
 
 echo "✅ Local .env and amplify.yml updated with actual secret name"
 
