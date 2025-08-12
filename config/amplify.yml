@@ -1,4 +1,8 @@
 version: 1
+env:
+  variables:
+    AWS_REGION: us-east-1
+    SESSION_DURATION_MINUTES: 15
 frontend:
   phases:
     preBuild:
