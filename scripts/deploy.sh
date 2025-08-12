@@ -117,7 +117,11 @@ AWS_REGION=$AWS_REGION
 SESSION_DURATION_MINUTES=15
 EOL
 
-echo "✅ Local .env file updated with actual secret name"
+# Update amplify.yml with actual secret name
+sed -i.bak "s/SECRET_NAME: .*/SECRET_NAME: $SECRET_NAME_ACTUAL/" config/amplify.yml
+rm -f config/amplify.yml.bak
+
+echo "✅ Local .env and amplify.yml updated with actual secret name"
 
 echo ""
 echo "🎉 Deployment complete!"

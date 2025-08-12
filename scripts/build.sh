@@ -32,12 +32,9 @@ cat > ./.amplify-hosting/compute/default/package.json << EOL
 }
 EOL
 
-# Get secret name dynamically from CloudFormation stack
-SECRET_NAME_FROM_STACK=$(aws cloudformation describe-stacks --stack-name qbusiness-public-sector --region us-east-1 --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' --output text 2>/dev/null || echo "")
-
-# Create environment file using dynamic values
+# Create environment file using Amplify environment variables
 cat > ./.amplify-hosting/compute/default/.env << EOL
-SECRET_NAME=${SECRET_NAME_FROM_STACK:-${SECRET_NAME:-qbusiness-config}}
+SECRET_NAME=${SECRET_NAME:-qbusiness-config}
 AWS_REGION=${AWS_REGION:-us-east-1}
 SESSION_DURATION_MINUTES=${SESSION_DURATION_MINUTES:-15}
 EOL
