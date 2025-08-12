@@ -100,6 +100,13 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   </div>
               </div>
           <script>
+            // Debug: Show environment variables
+            console.log('Environment Debug:', {
+              SECRET_NAME: '${process.env.SECRET_NAME}',
+              AWS_REGION: '${process.env.AWS_REGION}',
+              SESSION_DURATION_MINUTES: '${process.env.SESSION_DURATION_MINUTES}'
+            });
+            
             const sessionId = '${sessionId}';
             let remainingSeconds = ${sessionDuration * 60};
             

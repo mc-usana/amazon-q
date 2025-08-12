@@ -102,6 +102,15 @@ qbamplify/
 └── docs/                   # Documentation
 ```
 
+## Environment Configuration
+
+The application uses different environment variable sources depending on the deployment:
+
+- **Local Development**: Node.js 22+ automatically loads `config/.env` file
+- **AWS Amplify**: Uses environment variables from `config/amplify.yml`
+
+This dual approach eliminates the need for the `dotenv` package while ensuring consistent configuration across environments.
+
 ## Documentation
 
 - **[Setup Guide](docs/SETUP.md)** - Complete deployment and configuration
