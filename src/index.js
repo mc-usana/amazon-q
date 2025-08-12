@@ -22,34 +22,7 @@ const client = new QBusinessClient({
 // Cache for Q Business configuration
 let qbusinessConfig = null;
 
-// Session management
-class SessionManager {
-  constructor() {
-    this.sessions = new Map();
-  }
 
-  create(durationMinutes) {
-    const sessionId = Date.now().toString();
-    this.sessions.set(sessionId, {
-      createdAt: Date.now(),
-      durationMinutes
-    });
-    return sessionId;
-  }
-
-  getStatus(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) return { remainingSeconds: 0 };
-    
-    const elapsed = Math.floor((Date.now() - session.createdAt) / 1000);
-    const totalSeconds = session.durationMinutes * 60;
-    const remainingSeconds = Math.max(0, totalSeconds - elapsed);
-    
-    return { remainingSeconds };
-  }
-}
-
-const sessionManager = new SessionManager();
 
 // Middleware
 const noCacheMiddleware = (req, res, next) => {
@@ -80,9 +53,9 @@ app.get('/', noCacheMiddleware, async (req, res) => {
     const response = await client.send(command);
     const anonymousUrl = response.anonymousUrl;
     
-    // Track session
+    // Session duration
     const sessionDuration = parseInt(process.env.SESSION_DURATION_MINUTES || '15', 10);
-    const sessionId = sessionManager.create(sessionDuration);
+    const sessionId = Date.now().toString();
     
     // Send HTML with the iframe already configured
     res.send(`
@@ -110,25 +83,10 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   </div>
               </div>
           <script>
-            // Debug: Show environment variables
-            console.log('Environment Debug:', {
-              SECRET_NAME: '${process.env.SECRET_NAME}',
-              AWS_REGION: '${process.env.AWS_REGION}',
-              SESSION_DURATION_MINUTES: '${process.env.SESSION_DURATION_MINUTES}'
-            });
-            
             const sessionId = '${sessionId}';
             let remainingSeconds = ${sessionDuration * 60};
             
-            async function syncWithServer() {
-              try {
-                const response = await fetch('/api/session-status/' + sessionId);
-                const data = await response.json();
-                remainingSeconds = data.remainingSeconds;
-              } catch (error) {
-                console.error('Failed to sync with server:', error);
-              }
-            }
+
             
             function updateTimer() {
               const minutes = Math.floor(remainingSeconds / 60);
@@ -149,10 +107,6 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             }
             
             setInterval(updateTimer, 1000);
-            setInterval(syncWithServer, 30000); // Sync every 30 seconds
-            window.addEventListener('visibilitychange', () => {
-              if (!document.hidden) syncWithServer(); // Sync when page becomes visible
-            });
             window.onload = updateTimer;
           </script> 
               <div class="iframe-container">
@@ -191,11 +145,7 @@ app.get('/', noCacheMiddleware, async (req, res) => {
   }
 });
 
-// Session status endpoint
-app.get('/api/session-status/:sessionId', (req, res) => {
-  const status = sessionManager.getStatus(req.params.sessionId);
-  res.json(status);
-});
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
