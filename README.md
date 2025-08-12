@@ -104,12 +104,24 @@ qbamplify/
 
 ## Environment Configuration
 
-The application uses different environment variable sources depending on the deployment:
+The application handles environment variables differently across deployment environments:
 
-- **Local Development**: Node.js 22+ automatically loads `config/.env` file
-- **AWS Amplify**: Uses environment variables from `config/amplify.yml`
+### Local Development
+- Node.js 22+ automatically loads `config/.env` file
+- Variables are available directly via `process.env`
 
-This dual approach eliminates the need for the `dotenv` package while ensuring consistent configuration across environments.
+### AWS Amplify Deployment
+- **Build Time**: Environment variables defined in `amplify.yml` are available during build
+- **Runtime**: Build script captures these variables and writes them to `.env` file
+- **Application**: Uses `dotenv.config()` to load the `.env` file at runtime
+
+**Important**: Amplify environment variables from `amplify.yml` are only available during the build process, not at runtime. For server-side Express applications, the build script must transfer these variables to a `.env` file that gets deployed with the application.
+
+### Variable Flow
+```
+Local: config/.env → Node.js auto-load → process.env
+Amplify: amplify.yml → build script → .env file → dotenv.config() → process.env
+```
 
 ## Documentation
 

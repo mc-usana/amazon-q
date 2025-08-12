@@ -4,8 +4,14 @@ import * as dotenv from 'dotenv';
 import { getStyles } from './utils.js';
 import { getQBusinessConfig } from './secrets.js';
 
-// Load environment variables from .env file (created by build script)
-dotenv.config();
+// Load environment variables from .env file
+// Try local path first, then current directory (Amplify)
+import { existsSync } from 'fs';
+if (existsSync('config/.env')) {
+  dotenv.config({ path: 'config/.env' });
+} else {
+  dotenv.config();
+}
 
 // Configure AWS SDK client to use the default credential provider chain
 // This will automatically use the IAM role associated with the Amplify Compute environment
