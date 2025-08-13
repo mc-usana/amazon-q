@@ -6,6 +6,10 @@ node_modules/
 # Environment files
 .env.local
 .env.production
+config/.env
+
+# Amplify files (using CloudFormation BuildSpec instead)
+amplify.yml
 
 # Logs
 logs/

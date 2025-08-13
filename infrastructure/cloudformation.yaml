@@ -12,7 +12,7 @@ Parameters:
   SessionDurationMinutes:
     Description: Session duration in minutes for anonymous users
     Type: Number
-    Default: 60
+    Default: 15
     MinValue: 15
     MaxValue: 60
   
@@ -175,8 +175,13 @@ Resources:
      Subtitle: Providing secure information access for public sector agencies
      WelcomeMessage: Welcome to your secure AI assistant. I can help you find information from approved government resources. How may I assist you today?
      SamplePromptsControlMode: ENABLED
+     Origins:
+       - 'http://localhost:3000'
      CustomizationConfiguration:
-       CustomCSSUrl: !Sub 'https://${ThemeBucketName}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css'
+       CustomCSSUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css'
+       LogoUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/aws-logo.png'
+       FontUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/AmazonEmber_Bd.ttf'
+       FaviconUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/favicon.ico'
 
   # IAM Service Role for Amplify
   AmplifyServiceRole:
@@ -269,12 +274,13 @@ Resources:
         EnableAutoBuild: true
         AutoBranchCreationPatterns:
           - !Ref GitHubBranch
-      BuildSpec: |
+      BuildSpec: !Sub |
         version: 1
         env:
           variables:
-            SECRET_NAME: !Ref QBusinessConfigSecret
-            SESSION_DURATION_MINUTES: !Ref SessionDurationMinutes
+            SECRET_NAME: ${QBusinessConfigSecret}
+            REGION: ${AWS::Region}
+            SESSION_DURATION_MINUTES: ${SessionDurationMinutes}
         frontend:
           phases:
             preBuild:
@@ -290,6 +296,8 @@ Resources:
             baseDirectory: .amplify-hosting
             files:
               - '**/*'
+            files:
+              - '**/*'
       EnvironmentVariables:
         - Name: SECRET_NAME
           Value: !Ref QBusinessConfigSecret
@@ -301,7 +309,76 @@ Resources:
         - Key: Environment
           Value: Production
 
-  # Amplify Branch
+  # Lambda function to update Q Business origins
+  UpdateOriginsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-update-qbusiness-origins'
+      Runtime: python3.9
+      Handler: index.handler
+      Role: !GetAtt UpdateOriginsRole.Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          
+          def handler(event, context):
+              try:
+                  if event['RequestType'] == 'Delete':
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                      return
+                  
+                  qbusiness = boto3.client('qbusiness')
+                  
+                  app_id = event['ResourceProperties']['ApplicationId']
+                  web_exp_id = event['ResourceProperties']['WebExperienceId']
+                  origins = event['ResourceProperties']['Origins']
+                  
+                  qbusiness.update_web_experience(
+                      applicationId=app_id,
+                      webExperienceId=web_exp_id,
+                      origins=origins
+                  )
+                  
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  print(f"Error: {str(e)}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {})
+
+  UpdateOriginsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: UpdateQBusinessOrigins
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - qbusiness:UpdateWebExperience
+                Resource: '*'
+
+  # Custom resource to update origins
+  UpdateQBusinessOrigins:
+    Type: AWS::CloudFormation::CustomResource
+    Condition: HasGitHubRepo
+    Properties:
+      ServiceToken: !GetAtt UpdateOriginsFunction.Arn
+      ApplicationId: !GetAtt QBusinessApp.ApplicationId
+      WebExperienceId: !Select [1, !Split ['|', !Ref QBusinessWebExperience]]
+      Origins:
+        - !Sub 'https://${GitHubBranch}.${AmplifyApp.AppId}.amplifyapp.com'
+        - 'http://localhost:3000'
   AmplifyBranch:
     Type: AWS::Amplify::Branch
     Condition: HasGitHubRepo
