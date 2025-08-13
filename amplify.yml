@@ -1,7 +1,7 @@
 version: 1
 env:
   variables:
-    SECRET_NAME: qbusiness-config-qbusiness-public-sector-d5fa6f60
+    SECRET_NAME: qbusiness-config-qbusiness-public-sector-acbc23a0
     AWS_REGION: us-east-1
     SESSION_DURATION_MINUTES: 15
 frontend:
