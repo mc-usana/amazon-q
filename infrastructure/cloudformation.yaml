@@ -244,7 +244,7 @@ Resources:
                 Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*'
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
-                Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:qbusiness-config-qbusiness-public-sector-ebc1b630-*'
+                Resource: !Ref QBusinessConfigSecret
               - Effect: Allow
                 Action: qbusiness:CreateAnonymousWebExperienceUrl
                 Resource:
@@ -273,7 +273,7 @@ Resources:
         version: 1
         env:
           variables:
-            SECRET_NAME: qbusiness-config-qbusiness-public-sector-d5fa6f60
+            SECRET_NAME: !Ref QBusinessConfigSecret
             SESSION_DURATION_MINUTES: !Ref SessionDurationMinutes
         frontend:
           phases:
@@ -292,7 +292,7 @@ Resources:
               - '**/*'
       EnvironmentVariables:
         - Name: SECRET_NAME
-          Value: qbusiness-config-qbusiness-public-sector-d5fa6f60
+          Value: !Ref QBusinessConfigSecret
         - Name: SESSION_DURATION_MINUTES
           Value: !Ref SessionDurationMinutes
       Tags:
