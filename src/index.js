@@ -30,8 +30,6 @@ const client = new QBusinessClient({
 // Cache for Q Business configuration
 let qbusinessConfig = null;
 
-
-
 // Middleware
 const noCacheMiddleware = (req, res, next) => {
   res.set({

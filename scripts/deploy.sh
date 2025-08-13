@@ -131,6 +131,11 @@ rm -f amplify.yml.bak
 echo "✅ Local .env and amplify.yml updated with actual secret name"
 
 echo ""
+echo "📤 Committing and pushing changes to trigger Amplify build..."
+git add amplify.yml config/.env
+git commit -m "Update amplify.yml and .env with deployed infrastructure config"
+git push origin "$GITHUB_BRANCH"
+
 echo "🎉 Deployment complete!"
 echo ""
 echo "Next steps:"
