@@ -7,6 +7,9 @@ echo "================================================"
 # Configuration
 STACK_NAME=${1:-"qbusiness-public-sector"}
 AWS_REGION=${AWS_REGION:-"us-east-1"}
+GITHUB_BRANCH=${2:-"main"}
+GITHUB_REPO=${3:-""}
+GITHUB_TOKEN=${4:-""}
 
 echo ""
 echo "Do you have existing Q Business resources? (y/n)"
@@ -70,12 +73,16 @@ else
     
     read -p "Press Enter to continue or Ctrl+C to cancel..."
     
+    PARAMS="QBusinessApplicationName=$APP_NAME ThemeBucketName=$BUCKET_NAME GitHubBranch=$GITHUB_BRANCH"
+    
+    if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
+        PARAMS="$PARAMS GitHubRepository=$GITHUB_REPO GitHubAccessToken=$GITHUB_TOKEN"
+    fi
+    
     aws cloudformation deploy \
       --template-file infrastructure/cloudformation.yaml \
       --stack-name "$STACK_NAME" \
-      --parameter-overrides \
-        QBusinessApplicationName="$APP_NAME" \
-        ThemeBucketName="$BUCKET_NAME" \
+      --parameter-overrides $PARAMS \
       --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
       --region "$AWS_REGION"
     
@@ -94,7 +101,7 @@ if [[ "$HAS_EXISTING" =~ ^[Yy]$ ]]; then
 else
     aws cloudformation describe-stacks \
       --stack-name "$STACK_NAME" \
-      --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId` || OutputKey==`QBusinessWebExperienceId` || OutputKey==`AmplifyComputeRoleArn`].[OutputKey,OutputValue]' \
+      --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId` || OutputKey==`QBusinessWebExperienceId` || OutputKey==`AmplifyComputeRoleArn` || OutputKey==`AmplifyDefaultDomain`].[OutputKey,OutputValue]' \
       --output table \
       --region "$AWS_REGION"
 fi

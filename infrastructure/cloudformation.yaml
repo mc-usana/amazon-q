@@ -203,6 +203,13 @@ Resources:
                   - logs:PutLogEvents
                 Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*'
 
+  # CloudWatch Log Group for Amplify
+  AmplifyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/amplify/${AWS::StackName}-qbusiness-app'
+      RetentionInDays: 14
+
   # IAM Role for Amplify Compute
   AmplifyComputeRole:
     Type: AWS::IAM::Role
@@ -237,7 +244,7 @@ Resources:
                 Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*'
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
-                Resource: !Ref QBusinessConfigSecret
+                Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:qbusiness-config-qbusiness-public-sector-ebc1b630-*'
               - Effect: Allow
                 Action: qbusiness:CreateAnonymousWebExperienceUrl
                 Resource:
@@ -257,11 +264,16 @@ Resources:
       ComputeRoleArn: !GetAtt AmplifyComputeRole.Arn
       Repository: !If [HasGitHubRepo, !Ref GitHubRepository, !Ref 'AWS::NoValue']
       AccessToken: !If [HasGitHubToken, !Ref GitHubAccessToken, !Ref 'AWS::NoValue']
+      AutoBranchCreationConfig:
+        EnableAutoBranchCreation: true
+        EnableAutoBuild: true
+        AutoBranchCreationPatterns:
+          - !Ref GitHubBranch
       BuildSpec: |
         version: 1
         env:
           variables:
-            SECRET_NAME: !Ref QBusinessConfigSecret
+            SECRET_NAME: qbusiness-config-qbusiness-public-sector-d5fa6f60
             SESSION_DURATION_MINUTES: !Ref SessionDurationMinutes
         frontend:
           phases:
@@ -280,7 +292,7 @@ Resources:
               - '**/*'
       EnvironmentVariables:
         - Name: SECRET_NAME
-          Value: !Ref QBusinessConfigSecret
+          Value: qbusiness-config-qbusiness-public-sector-d5fa6f60
         - Name: SESSION_DURATION_MINUTES
           Value: !Ref SessionDurationMinutes
       Tags:

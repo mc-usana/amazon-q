@@ -7,6 +7,10 @@ const client = new SecretsManagerClient({
 export async function getQBusinessConfig() {
   const secretName = process.env.SECRET_NAME || 'qbusiness-config';
   
+  console.log('DEBUG: SECRET_NAME from env:', process.env.SECRET_NAME);
+  console.log('DEBUG: Using secret name:', secretName);
+  console.log('DEBUG: AWS_REGION:', process.env.AWS_REGION);
+  
   try {
     const command = new GetSecretValueCommand({ SecretId: secretName });
     const response = await client.send(command);
