@@ -16,7 +16,7 @@ if (existsSync('config/.env')) {
 // Log environment variables for debugging
 console.log('Environment variables:', {
   SECRET_NAME: process.env.SECRET_NAME ? 'SET' : 'MISSING',
-  AWS_REGION: process.env.AWS_REGION ? 'SET' : 'MISSING',
+  REGION: (process.env.AWS_REGION || process.env.REGION) ? 'SET' : 'MISSING',
   SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES ? 'SET' : 'MISSING',
   PORT: process.env.PORT || '3000'
 });
@@ -24,7 +24,7 @@ console.log('Environment variables:', {
 // Configure AWS SDK client to use the default credential provider chain
 // This will automatically use the IAM role associated with the Amplify Compute environment
 const client = new QBusinessClient({
-  region: process.env.AWS_REGION || 'us-east-1'
+  region: process.env.AWS_REGION || process.env.REGION || 'us-east-1'
 });
 
 // Cache for Q Business configuration
