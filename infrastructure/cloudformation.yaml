@@ -366,6 +366,45 @@ Resources:
                   - qbusiness:UpdateWebExperience
                 Resource: '*'
 
+  # AWS WAF WebACL for Amplify
+  AmplifyWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub '${AWS::StackName}-amplify-waf'
+      Description: WAF for Amplify application protection
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: CommonRuleSetMetric
+        - Name: AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 2
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: KnownBadInputsRuleSetMetric
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub '${AWS::StackName}-amplify-waf'
+
   # Custom resource to update origins
   UpdateQBusinessOrigins:
     Type: AWS::CloudFormation::CustomResource
@@ -377,6 +416,52 @@ Resources:
       Origins:
         - !Sub 'https://${GitHubBranch}.${AmplifyApp.AppId}.amplifyapp.com'
         - 'http://localhost:3000'
+  # AWS WAF WebACL for Amplify
+  AmplifyWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub '${AWS::StackName}-amplify-waf'
+      Description: WAF for Amplify application protection
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: CommonRuleSetMetric
+        - Name: AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 2
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: KnownBadInputsRuleSetMetric
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub '${AWS::StackName}-amplify-waf'
+
+  # AWS WAF WebACL Association with Amplify
+  AmplifyWAFAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !GetAtt AmplifyApp.Arn
+      WebAclArn: !GetAtt AmplifyWebACL.Arn
+
   AmplifyBranch:
     Type: AWS::Amplify::Branch
     Condition: HasGitHubRepo
@@ -439,6 +524,12 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-AmplifyDomain'
   
+  WAFWebACLArn:
+    Description: WAF WebACL ARN for Amplify association
+    Value: !GetAtt AmplifyWebACL.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-WAFWebACLArn'
+  
   NextSteps:
     Description: Instructions for completing the deployment
     Value: |
@@ -446,3 +537,4 @@ Outputs:
       2. Follow AMPLIFY-SETUP.md to deploy the web application
       3. Use the AmplifyComputeRoleArn output for the Amplify IAM role
       4. Add your Amplify domain to Q Business allowed URLs
+      5. Associate the WAF WebACL with your Amplify app in the console
