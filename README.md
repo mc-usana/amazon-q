@@ -69,8 +69,8 @@ Successfully created/updated stack - qbusiness-public-sector
 🎉 Deployment complete!
 
 Next steps:
-1. Test locally: npm install && npm start
-2. Your Amplify app will auto-deploy from your GitHub repository
+1. Visit your AmplifyDefaultDomain to verify deployment
+2. Test locally: npm install && npm start
 ```
 
 **Step 3: Test locally (optional).**
@@ -80,6 +80,8 @@ npm install && npm start
 ```
 
 Visit `http://localhost:3000` to test locally.
+
+**Note**: Your Amplify app will auto-deploy from your GitHub repository.
 
 ## Reference Architecture
 
