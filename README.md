@@ -24,15 +24,16 @@ By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.a
 
 ## Setup
 
-**Step 1: Clone the repository and install dependencies.**
+**Step 1: Fork this repository** to your GitHub account (don't just clone)
 
+**Step 2: Clone your fork** locally:
 ```bash
-git clone <repository-url>
-cd qbamplify
+git clone https://github.com/YOUR_USERNAME/YOUR_FORKED_REPO.git
+cd YOUR_FORKED_REPO
 npm install
 ```
 
-**Step 2: Deploy the infrastructure.**
+**Step 3: Deploy the infrastructure.**
 
 Deployment takes approximately 5-10 minutes.
 
@@ -43,12 +44,12 @@ Deployment takes approximately 5-10 minutes.
 **Parameters:**
 - `stack-name` (optional): CloudFormation stack name (default: "qbusiness-public-sector")
 - `branch` (optional): Git branch name (default: "main") 
-- `github-repo` (optional): GitHub repository URL (e.g., "https://github.com/username/repo")
-- `github-token` (optional): GitHub personal access token
+- `github-repo` (optional): Your **forked** GitHub repository URL (e.g., "https://github.com/username/repo")
+- `github-token` (optional): GitHub personal access token ([create one here](https://github.com/settings/personal-access-tokens)) for automatic deployment
 
 **Example with GitHub integration:**
 ```bash
-./scripts/deploy.sh my-stack main "https://github.com/myorg/myrepo" "ghp_xxxxxxxxxxxx"
+./scripts/deploy.sh my-stack main "https://github.com/myusername/my-forked-repo" "ghp_xxxxxxxxxxxx"
 ```
 
 **Example for local development only:**
