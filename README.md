@@ -87,7 +87,7 @@ Visit `http://localhost:3000` to test locally.
 
 ![Q Business with AWS Amplify Architecture](docs/images/q-business-with-aws-amplify-architecture-diagram.png)
 
-Built with Express.js and deployed on AWS Amplify using CloudFormation for infrastructure management, this template creates a secure, themed Q Business deployment with the following components:
+Built with Express.js and deployed on AWS Amplify using CloudFormation for infrastructure management, this demo solution creates a secure, themed Q Business deployment with the following components:
 
 - **Q Business Application**: Anonymous access with custom theming
 - **Web Experience**: Customized branding and styling
