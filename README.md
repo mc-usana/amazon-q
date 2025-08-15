@@ -37,8 +37,25 @@ npm install
 Deployment takes approximately 5-10 minutes.
 
 ```bash
+./scripts/deploy.sh [stack-name] [branch] [github-repo] [github-token]
+```
+
+**Parameters:**
+- `stack-name` (optional): CloudFormation stack name (default: "qbusiness-public-sector")
+- `branch` (optional): Git branch name (default: "main") 
+- `github-repo` (optional): GitHub repository URL (e.g., "https://github.com/username/repo")
+- `github-token` (optional): GitHub personal access token
+
+**Example with GitHub integration:**
+```bash
+./scripts/deploy.sh my-stack main "https://github.com/myorg/myrepo" "ghp_xxxxxxxxxxxx"
+```
+
+**Example for local development only:**
+```bash
 ./scripts/deploy.sh
 ```
+*Note: Without GitHub integration, this creates Q Business infrastructure and local .env file for development, but no Amplify deployment.*
 
 The script will ask if you have existing Q Business resources and guide you through setup:
 
