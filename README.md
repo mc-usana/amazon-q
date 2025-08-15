@@ -46,20 +46,34 @@ Deployment takes approximately 5-10 minutes.
 The script will ask if you have existing Q Business resources and guide you through setup:
 
 ```
-Do you have an existing Q Business application? (y/n): n
-Enter your organization name: My Agency
-Enter your application name: AI Assistant
+🏛️  Q Business Public Sector - Unified Deployment
+================================================
 
-Creating Q Business application...
-✓ Q Business application created: app-12345678
-✓ Web experience created
-✓ S3 bucket created for theme assets
-✓ Secrets Manager configuration stored
-✓ IAM roles configured
+Do you have existing Q Business resources? (y/n): n
 
-Deployment complete! 
-Application ID: app-12345678
-Web Experience URL: https://12345678.chat.us-east-1.amazonq.aws/
+🚀 Creating complete Q Business infrastructure from scratch...
+Application name [GovernmentAIAssistant]: My Agency Assistant
+
+Waiting for stack create/update to complete
+Successfully created/updated stack - qbusiness-public-sector
+✅ Infrastructure deployed successfully!
+
+📤 Uploading theme assets...
+✅ Theme assets uploaded successfully
+
+📋 Your configuration:
++---------------------------+-----------------------------------------------------------------------------+
+|  AmplifyComputeRoleArn    |  arn:aws:iam::123456789:role/qbusiness-public-sector-AmplifyComputeRole     |
+|  QBusinessApplicationId   |  5a3318c9-d49f-4497-b9d4-dc80b7a55059                                       |
+|  QBusinessWebExperienceId |  5a3318c9-d49f-4497-b9d4-dc80b7a55059|ae6d25c7-96be-4260-9d14-570dc9636d3e  |
+|  AmplifyDefaultDomain     |  https://main.d3aeu9tp3rg4ig.amplifyapp.com                                 |
++---------------------------+-----------------------------------------------------------------------------+
+
+🎉 Deployment complete!
+
+Next steps:
+1. Test locally: npm install && npm start
+2. Your Amplify app will auto-deploy from your GitHub repository
 ```
 
 **Step 3: Test locally (optional).**

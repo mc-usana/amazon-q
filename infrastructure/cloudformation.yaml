@@ -404,6 +404,7 @@ Resources:
     Properties:
       AppId: !GetAtt AmplifyApp.AppId
       BranchName: !Ref GitHubBranch
+      Stage: PRODUCTION
       EnableAutoBuild: true
       EnablePullRequestPreview: false
 
