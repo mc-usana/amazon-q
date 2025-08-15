@@ -81,7 +81,7 @@ npm install && npm start
 
 Visit `http://localhost:3000` to test locally.
 
-**Note**: Your Amplify app will auto-deploy from your GitHub repository.
+**Note**: Your Amplify app will auto-deploy when changes are committed to the main branch.
 
 ## Reference Architecture
 
