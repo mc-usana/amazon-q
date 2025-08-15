@@ -8,7 +8,7 @@
 
 This scalable solution provides a customized Amazon Q Business web application designed to help public sector agencies securely accelerate their adoption of Generative AI.
 
-The application features **custom theming** for organizational branding and **automatic session management** that creates new anonymous chat sessions for each user visit.
+The application features **custom theming** for organizational branding and **automatic session management** that creates new **[anonymous chat sessions](https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/using-web-experience.html#web-experience-anonymous)** for each user visit.
 
 By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.aws.amazon.com/amazonq/latest/api-reference/API_CreateAnonymousWebExperienceUrl.html), the solution provides secure, temporary access without requiring user authentication.  
 
@@ -24,13 +24,6 @@ By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.a
 - Q Business Application (can be created by the script)
 
 The AWS CLI needs to be configured with a profile that has CloudFormation, Amplify, Q Business, and Secrets Manager permissions.
-
-**Usage Disclaimers:**
-
-- You will be billed for AWS resources created by this solution
-- Domain configuration is required for iframe embedding
-- Local testing requires adding localhost to Q Business allowed URLs
-- Session duration is configurable (15-60 minutes, default: 15)
 
 ## Setup
 
@@ -50,44 +43,47 @@ Deployment takes approximately 5-10 minutes.
 ./scripts/deploy.sh
 ```
 
-The script will ask if you have existing Q Business resources and guide you through setup.
+The script will ask if you have existing Q Business resources and guide you through setup:
 
-**Step 3: Configure allowed URLs for Q Business.**
+```
+Do you have an existing Q Business application? (y/n): n
+Enter your organization name: My Agency
+Enter your application name: AI Assistant
 
-Add allowed URLs to Q Business web experience:
-- For local testing: `http://localhost:3000`
-- For production: Your Amplify domain URL
+Creating Q Business application...
+✓ Q Business application created: app-12345678
+✓ Web experience created
+✓ S3 bucket created for theme assets
+✓ Secrets Manager configuration stored
+✓ IAM roles configured
 
-Go to Q Business Console → Your Application → Web Experience → Allowed websites
+Deployment complete! 
+Application ID: app-12345678
+Web Experience URL: https://12345678.chat.us-east-1.amazonq.aws/
+```
 
-**Step 4: Test locally (optional).**
+**Step 3: Test locally (optional).**
 
 ```bash
-npm start
+npm install && npm start
 ```
 
 Visit `http://localhost:3000` to test locally.
 
-**Step 5: Deploy to Amplify.**
+**Step 4: Deploy to Amplify.**
 
 Connect your GitHub repository to AWS Amplify and deploy to production.
 
 ## Reference Architecture
 
-```mermaid
-graph LR
-    A[User] --> B[AWS Amplify]
-    B --> C[Amazon Q Business]
-    B --> D[S3 Theme Assets]
-    B --> E[Secrets Manager]
-    C --> F[AI Responses]
-```
+![Q Business with AWS Amplify Architecture](docs/images/q-business-with-aws-amplify-architecture-diagram.png)
 
 Built with Express.js and deployed on AWS Amplify using CloudFormation for infrastructure management, this template creates a secure, themed Q Business deployment with the following components:
 
 - **Q Business Application**: Anonymous access with custom theming
 - **Web Experience**: Customized branding and styling
 - **Amplify Hosting**: Server-side rendering with Express.js
+- **WAF (Web Application Firewall)**: Security protection for the web application
 - **Secrets Manager**: Secure storage of Q Business configuration
 - **S3 Bucket**: Theme assets (CSS, fonts, logos)
 - **IAM Roles**: Least-privilege permissions for Amplify compute
@@ -96,81 +92,29 @@ Built with Express.js and deployed on AWS Amplify using CloudFormation for infra
 
 ```
 qbamplify/
-├── src/                    # Express.js application
-├── config/                 # Configuration files
-├── scripts/                # Build and deployment scripts
 ├── assets/                 # Theme assets (CSS, fonts, logos)
+├── config/                 # Configuration files
+├── docs/                   # Documentation
 ├── infrastructure/         # CloudFormation templates
-└── docs/                   # Documentation
+├── scripts/                # Build and deployment scripts
+└── src/                    # Express.js application
 ```
 
-## Environment Configuration
+## Amplify GitHub App Migration
 
-The application handles environment variables differently across deployment environments:
+After deployment, you may see this message in the AWS Amplify console:
 
-### Local Development
-- Node.js 22+ automatically loads `config/.env` file
-- Variables are available directly via `process.env`
+![Amplify GitHub App Migration](docs/images/amplify-Migrate-to-our-GitHub-app-message.png)
 
-### AWS Amplify Deployment
-- **Build Time**: Environment variables defined in `amplify.yml` are available during build
-- **Runtime**: Build script captures these variables and writes them to `.env` file
-- **Application**: Uses `dotenv.config()` to load the `.env` file at runtime
+**Recommendation**: Click the "Start migration" button to migrate to the new GitHub App integration. This provides improved security, better permissions management, and enhanced CI/CD capabilities for your Amplify deployments.
 
-**Important**: Amplify environment variables from `amplify.yml` are only available during the build process, not at runtime. For server-side Express applications, the build script must transfer these variables to a `.env` file that gets deployed with the application.
+## Cleanup
 
-### Variable Flow
-```
-Local: config/.env → Node.js auto-load → process.env
-Amplify: amplify.yml → build script → .env file → dotenv.config() → process.env
-```
-
-## Documentation
-
-- **[Setup Guide](docs/SETUP.md)** - Complete deployment and configuration
-- **[Customization Guide](docs/CUSTOMIZATION.md)** - Theme and branding customization
-
-## Local Development
+To remove all AWS resources created by this solution:
 
 ```bash
-# Clone and install
-git clone <repository-url>
-cd qbamplify
-npm install
-
-# Deploy infrastructure first
-./scripts/deploy.sh
-
-# Add localhost to Q Business allowed URLs
-# Go to Q Business Console → Your Application → Web Experience → Allowed websites
-# Add: http://localhost:3000
-
-# Then start locally
-npm start
+./scripts/cleanup.sh
 ```
-
-Visit `http://localhost:3000` to test locally.
-
-**Important**: 
-- Local testing requires AWS credentials and the infrastructure to be deployed first
-- **Must add `http://localhost:3000` to Q Business web experience allowed URLs** for iframe to load
-
-## Deployment
-
-1. **Deploy Infrastructure**: `./scripts/deploy.sh`
-2. **Configure URLs**: Add allowed URLs to Q Business web experience:
-   - For local testing: `http://localhost:3000`
-   - For production: Your Amplify domain URL
-3. **Test Locally**: `npm install && npm start`
-4. **Deploy to Amplify**: Connect GitHub repository to AWS Amplify
-5. **Customize**: Follow [Customization Guide](docs/CUSTOMIZATION.md)
-6. **Cleanup**: `./scripts/cleanup.sh` (when needed)
-
-## Support
-
-- **Issues**: Use GitHub Issues for bug reports
-- **Documentation**: Check the `docs/` directory
-- **AWS Support**: Contact AWS Support for service-related issues
 
 ## Contributing
 
