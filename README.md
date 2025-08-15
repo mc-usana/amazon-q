@@ -60,10 +60,10 @@ Successfully created/updated stack - qbusiness-public-sector
 
 📋 Your configuration:
 +---------------------------+-----------------------------------------------------------------------------+
-|  AmplifyComputeRoleArn    |  arn:aws:iam::123456789:role/qbusiness-public-sector-AmplifyComputeRole     |
-|  QBusinessApplicationId   |  5a3318c9-d49f-4497-b9d4-dc80b7a55059                                       |
-|  QBusinessWebExperienceId |  5a3318c9-d49f-4497-b9d4-dc80b7a55059|ae6d25c7-96be-4260-9d14-570dc9636d3e  |
-|  AmplifyDefaultDomain     |  https://main.d3aeu9tp3rg4ig.amplifyapp.com                                 |
+|  AmplifyComputeRoleArn    |  arn:aws:iam::123456789012:role/qbusiness-public-sector-AmplifyComputeRole  |
+|  QBusinessApplicationId   |  abcd1234-5678-90ef-ghij-klmnopqrstuv                                       |
+|  QBusinessWebExperienceId |  abcd1234-5678-90ef-ghij-klmnopqrstuv|wxyz5678-90ab-cdef-1234-567890abcdef  |
+|  AmplifyDefaultDomain     |  https://main.d1a2b3c4d5e6f7.amplifyapp.com                                 |
 +---------------------------+-----------------------------------------------------------------------------+
 
 🎉 Deployment complete!
