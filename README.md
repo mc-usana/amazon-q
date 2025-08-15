@@ -140,8 +140,21 @@ After deployment, you may see this message in the AWS Amplify console:
 To remove all AWS resources created by this solution:
 
 ```bash
-./scripts/cleanup.sh
+./scripts/cleanup.sh [stack-name]
 ```
+
+**Parameters:**
+- `stack-name` (optional): CloudFormation stack name to delete (default: "qbusiness-public-sector")
+
+**Example:**
+```bash
+./scripts/cleanup.sh my-stack
+```
+
+The script will:
+1. Empty the S3 theme assets bucket (all versions)
+2. Delete the Secrets Manager secret
+3. Delete the CloudFormation stack and all associated resources
 
 ## Contributing
 
