@@ -307,65 +307,6 @@ Resources:
         - Key: Environment
           Value: Production
 
-  # Lambda function to update Q Business origins
-  UpdateOriginsFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub '${AWS::StackName}-update-qbusiness-origins'
-      Runtime: python3.9
-      Handler: index.handler
-      Role: !GetAtt UpdateOriginsRole.Arn
-      Code:
-        ZipFile: |
-          import boto3
-          import cfnresponse
-          import json
-          
-          def handler(event, context):
-              try:
-                  if event['RequestType'] == 'Delete':
-                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
-                      return
-                  
-                  qbusiness = boto3.client('qbusiness')
-                  
-                  app_id = event['ResourceProperties']['ApplicationId']
-                  web_exp_id = event['ResourceProperties']['WebExperienceId']
-                  origins = event['ResourceProperties']['Origins']
-                  
-                  qbusiness.update_web_experience(
-                      applicationId=app_id,
-                      webExperienceId=web_exp_id,
-                      origins=origins
-                  )
-                  
-                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
-              except Exception as e:
-                  print(f"Error: {str(e)}")
-                  cfnresponse.send(event, context, cfnresponse.FAILED, {})
-
-  UpdateOriginsRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: UpdateQBusinessOrigins
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - qbusiness:UpdateWebExperience
-                Resource: '*'
-
   # AWS WAF WebACL for Amplify
   AmplifyWebACL:
     Type: AWS::WAFv2::WebACL
@@ -405,19 +346,14 @@ Resources:
         CloudWatchMetricsEnabled: true
         MetricName: !Sub '${AWS::StackName}-amplify-waf'
 
-  # Custom resource to update origins
-  UpdateQBusinessOrigins:
-    Type: AWS::CloudFormation::CustomResource
-    Condition: HasGitHubRepo
+  # AWS WAF WebACL Association with Amplify
+  AmplifyWAFAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
     Properties:
-      ServiceToken: !GetAtt UpdateOriginsFunction.Arn
-      ApplicationId: !GetAtt QBusinessApp.ApplicationId
-      WebExperienceId: !Select [1, !Split ['|', !Ref QBusinessWebExperience]]
-      Origins:
-        - !Sub 'https://${GitHubBranch}.${AmplifyApp.AppId}.amplifyapp.com'
-        - 'http://localhost:3000'
-  # AWS WAF WebACL for Amplify
-  AmplifyWebACL:
+      ResourceArn: !GetAtt AmplifyApp.Arn
+      WebAclArn: !GetAtt AmplifyWebACL.Arn
+
+  AmplifyBranch:
     Type: AWS::WAFv2::WebACL
     Properties:
       Name: !Sub '${AWS::StackName}-amplify-waf'
