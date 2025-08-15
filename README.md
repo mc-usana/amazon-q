@@ -18,12 +18,9 @@ By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.a
 
 #### Prerequisites:
 - AWS Account with appropriate permissions
-- Node.js 18+ installed locally
+- Node.js 22+ installed locally
 - AWS CLI configured
 - Git repository
-- Q Business Application (can be created by the script)
-
-The AWS CLI needs to be configured with a profile that has CloudFormation, Amplify, Q Business, and Secrets Manager permissions.
 
 ## Setup
 
@@ -83,10 +80,6 @@ npm install && npm start
 ```
 
 Visit `http://localhost:3000` to test locally.
-
-**Step 4: Deploy to Amplify.**
-
-Connect your GitHub repository to AWS Amplify and deploy to production.
 
 ## Reference Architecture
 
