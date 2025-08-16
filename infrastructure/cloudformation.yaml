@@ -166,10 +166,10 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
@@ -190,7 +190,9 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: application.qbusiness.amazonaws.com
+              Service: 
+                - application.qbusiness.amazonaws.com
+                - cloudfront.amazonaws.com
             Action: s3:GetObject
             Resource:
               - !Sub ${ThemeAssetsBucket.Arn}/public-sector-theme.css
@@ -202,8 +204,6 @@ Resources:
                 aws:SecureTransport: 'true'
               StringEquals:
                 aws:SourceAccount: !Ref AWS::AccountId
-              ArnLike:
-                aws:SourceArn: !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}
 
   # Secrets Manager Secret for Q Business Configuration
   QBusinessConfigSecret:
