@@ -178,7 +178,7 @@ echo "─ DEPLOYMENT SUMMARY ─────────────────
 echo ""
 aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" \
-  --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId` || OutputKey==`QBusinessWebExperienceId` || OutputKey==`AmplifyComputeRoleArn` || OutputKey==`AmplifyDefaultDomain` || OutputKey==`SecretsManagerSecretName`].[OutputKey,OutputValue]' \
+  --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId` || OutputKey==`QBusinessWebExperienceId` || OutputKey==`AmplifyComputeRoleArn` || OutputKey==`AmplifyDefaultDomain` || OutputKey==`QBusinessDefaultEndpoint` || OutputKey==`SecretsManagerSecretName`].[OutputKey,OutputValue]' \
   --output table \
   --region "$AWS_REGION" \
   --no-cli-pager
@@ -190,7 +190,8 @@ echo ""
 if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
     echo "NEXT STEPS:"
     echo "   1. Visit your AmplifyDefaultDomain to verify deployment"
-    echo "   2. Test locally: npm install && npm start"
+    echo "   2. Visit your QBusinessDefaultEndpoint to access the Q Business chat"
+    echo "   3. Test locally: npm install && npm start"
 else
     echo "NEXT STEPS:"
     echo "   1. Test locally: npm install && npm start"

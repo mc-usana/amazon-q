@@ -138,10 +138,10 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
       LifecycleConfiguration:
         Rules:
           - Id: DeleteOldLogs
@@ -166,9 +166,9 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
+        BlockPublicAcls: true
         BlockPublicPolicy: false
-        IgnorePublicAcls: false
+        IgnorePublicAcls: true
         RestrictPublicBuckets: false
       VersioningConfiguration:
         Status: Enabled
@@ -188,11 +188,10 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: Allow
+          - Sid: PolicyForAmazonQWebAccessForWebExperienceArtifacts
+            Effect: Allow
             Principal:
-              Service: 
-                - application.qbusiness.amazonaws.com
-                - cloudfront.amazonaws.com
+              Service: application.qbusiness.amazonaws.com
             Action: s3:GetObject
             Resource:
               - !Sub ${ThemeAssetsBucket.Arn}/public-sector-theme.css
@@ -202,8 +201,6 @@ Resources:
             Condition:
               Bool:
                 aws:SecureTransport: 'true'
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
 
   # Secrets Manager Secret for Q Business Configuration
   QBusinessConfigSecret:
@@ -501,6 +498,12 @@ Outputs:
     Condition: HasGitHubRepo
     Export:
       Name: !Sub ${AWS::StackName}-AmplifyDomain
+
+  QBusinessDefaultEndpoint:
+    Description: Default endpoint URL for the Q Business web experience
+    Value: !GetAtt QBusinessWebExperience.DefaultEndpoint
+    Export:
+      Name: !Sub ${AWS::StackName}-QBusinessEndpoint
 
   WAFWebACLArn:
     Description: WAF WebACL ARN for Amplify association
