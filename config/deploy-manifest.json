@@ -28,7 +28,7 @@
       "runtime": "nodejs20.x",
       "entrypoint": "index.js",
       "environmentVariables": {
-        "SECRET_NAME": "${SECRET_NAME}",
+        "QBUSINESS_CONFIG_ID": "${QBUSINESS_CONFIG_ID}",
         "REGION": "${REGION}",
         "SESSION_DURATION_MINUTES": "${SESSION_DURATION_MINUTES}",
         "NODE_ENV": "production"

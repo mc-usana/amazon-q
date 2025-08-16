@@ -120,6 +120,34 @@ Resources:
       DisplayName: qbusiness-retriever
       Type: NATIVE_INDEX
 
+  # S3 Bucket for Access Logs
+  AccessLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub
+        - ${BucketName}-access-logs-${StackName}-${UniqueId}
+        - BucketName: !Ref ThemeBucketName
+          StackName: !Ref AWS::StackName
+          UniqueId: !Select
+            - 0
+            - !Split
+              - '-'
+              - !Select
+                - 2
+                - !Split
+                  - /
+                  - !Ref AWS::StackId
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldLogs
+            Status: Enabled
+            ExpirationInDays: 30
+
   # S3 Bucket for Theme Assets
   ThemeAssetsBucket:
     Type: AWS::S3::Bucket
@@ -138,12 +166,19 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       VersioningConfiguration:
         Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref AccessLogsBucket
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldAssets
+            Status: Enabled
+            ExpirationInDays: 90
 
   # S3 Bucket Policy for Q Business Access
   ThemeAssetsBucketPolicy:
@@ -165,6 +200,10 @@ Resources:
             Condition:
               Bool:
                 aws:SecureTransport: 'true'
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}
 
   # Secrets Manager Secret for Q Business Configuration
   QBusinessConfigSecret:
@@ -327,7 +366,7 @@ Resources:
             files:
               - '**/*'
       EnvironmentVariables:
-        - Name: SECRET_NAME
+        - Name: QBUSINESS_CONFIG_ID
           Value: !Ref QBusinessConfigSecret
         - Name: REGION
           Value: !Ref AWS::Region

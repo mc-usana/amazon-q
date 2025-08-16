@@ -47,7 +47,7 @@ BUCKET_NAME=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`ThemeBucketName`].OutputValue' \
   --output text 2>/dev/null || echo "")
 
-SECRET_NAME=$(aws cloudformation describe-stacks \
+QBUSINESS_CONFIG_ID=$(aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" \
   --region "$AWS_REGION" \
   --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' \
@@ -56,8 +56,8 @@ SECRET_NAME=$(aws cloudformation describe-stacks \
 if [ -n "$BUCKET_NAME" ]; then
     echo "✅ Found S3 bucket: $BUCKET_NAME"
 fi
-if [ -n "$SECRET_NAME" ]; then
-    echo "✅ Found secret: $SECRET_NAME"
+if [ -n "$QBUSINESS_CONFIG_ID" ]; then
+    echo "✅ Found secret: $QBUSINESS_CONFIG_ID"
 fi
 
 echo ""
@@ -104,10 +104,10 @@ fi
 echo ""
 echo "─ SECRETS MANAGER CLEANUP ────────────────────────────────────────────────────"
 echo ""
-if [ -n "$SECRET_NAME" ]; then
+if [ -n "$QBUSINESS_CONFIG_ID" ]; then
     echo "Deleting Secrets Manager secret..."
     aws secretsmanager delete-secret \
-      --secret-id "$SECRET_NAME" \
+      --secret-id "$QBUSINESS_CONFIG_ID" \
       --force-delete-without-recovery \
       --region "$AWS_REGION" >/dev/null 2>&1 || true
     echo "✅ Secret deleted successfully"
@@ -139,8 +139,8 @@ echo "   • Stack: $STACK_NAME"
 if [ -n "$BUCKET_NAME" ]; then
     echo "   • S3 Bucket: $BUCKET_NAME"
 fi
-if [ -n "$SECRET_NAME" ]; then
-    echo "   • Secret: $SECRET_NAME"
+if [ -n "$QBUSINESS_CONFIG_ID" ]; then
+    echo "   • Secret: $QBUSINESS_CONFIG_ID"
 fi
 echo ""
 echo "✨ Thank you for using Amazon Q Business!"

@@ -34,7 +34,7 @@ EOL
 
 # Create environment file using Amplify build-time environment variables
 cat > ./.amplify-hosting/compute/default/.env << EOL
-SECRET_NAME=${SECRET_NAME:-qbusiness-config}
+QBUSINESS_CONFIG_ID=${QBUSINESS_CONFIG_ID:-qbusiness-config}
 REGION=${REGION:-us-east-1}
 SESSION_DURATION_MINUTES=${SESSION_DURATION_MINUTES:-15}
 EOL

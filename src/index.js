@@ -15,7 +15,7 @@ if (!process.env.AWS_LAMBDA_FUNCTION_NAME && existsSync('config/.env')) {
 
 // Log environment variables for debugging
 console.log('Environment variables:', {
-  SECRET_NAME: process.env.SECRET_NAME ? 'SET' : 'MISSING',
+  QBUSINESS_CONFIG_ID: process.env.QBUSINESS_CONFIG_ID ? 'SET' : 'MISSING',
   REGION: (process.env.AWS_REGION || process.env.REGION) ? 'SET' : 'MISSING',
   SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES ? 'SET' : 'MISSING',
   PORT: process.env.PORT || '3000'

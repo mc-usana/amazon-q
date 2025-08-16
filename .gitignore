@@ -11,6 +11,9 @@ config/.env
 # Amplify files (using CloudFormation BuildSpec instead)
 amplify.yml
 
+# Security review assets
+_aws_deliverable_security_review_assets/
+
 # Logs
 logs/
 *.log
