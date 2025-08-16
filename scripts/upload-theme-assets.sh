@@ -111,5 +111,26 @@ echo "$BUCKET_POLICY" | aws s3api put-bucket-policy \
   --region "$AWS_REGION" \
   --no-cli-pager >/dev/null 2>&1
 
-echo "✅ Theme assets uploaded and bucket policy updated with Referer condition"
+# Get Q Business Application and Web Experience IDs
+QBUSINESS_APP_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --region "$AWS_REGION" \
+  --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId`].OutputValue' \
+  --output text)
+
+QBUSINESS_WEB_EXP_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --region "$AWS_REGION" \
+  --query 'Stacks[0].Outputs[?OutputKey==`QBusinessWebExperienceId`].OutputValue' \
+  --output text | cut -d'|' -f2)
+
+# Update Q Business web experience with theme customization
+aws qbusiness update-web-experience \
+  --application-id "$QBUSINESS_APP_ID" \
+  --web-experience-id "$QBUSINESS_WEB_EXP_ID" \
+  --customization-configuration "{\"customCSSUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/public-sector-theme.css\",\"logoUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/aws-logo.png\",\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/AmazonEmber_Bd.ttf\",\"faviconUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/favicon.ico\"}" \
+  --region "$AWS_REGION" \
+  --no-cli-pager >/dev/null 2>&1
+
+echo "✅ Theme assets uploaded, bucket policy updated, and Q Business web experience configured"
 
