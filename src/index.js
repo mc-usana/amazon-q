@@ -4,10 +4,10 @@ import * as dotenv from 'dotenv';
 import { getStyles } from './utils.js';
 import { getQBusinessConfig } from './secrets.js';
 
-// Load environment variables from .env file
-// Try local path first, then current directory (Amplify)
+// Load environment variables from .env file only in local development
+// Check if we're running locally (not in Amplify/Lambda environment)
 import { existsSync } from 'fs';
-if (existsSync('config/.env')) {
+if (!process.env.AWS_LAMBDA_FUNCTION_NAME && existsSync('config/.env')) {
   dotenv.config({ path: 'config/.env' });
 } else {
   dotenv.config();
