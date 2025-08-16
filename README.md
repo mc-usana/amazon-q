@@ -58,37 +58,52 @@ Deployment takes approximately 5-10 minutes.
 ```
 *Note: Without GitHub integration, this creates Q Business infrastructure and local .env file for development, but no Amplify deployment.*
 
-The script will ask if you have existing Q Business resources and guide you through setup:
+The script will guide you through setup:
 
 ```
-🏛️  Q Business Public Sector - Unified Deployment
-================================================
+🏛️  AMAZON Q BUSINESS DEPLOYMENT
 
-Do you have existing Q Business resources? (y/n): n
+⏱️  Estimated deployment time: ~10 minutes
 
-🚀 Creating complete Q Business infrastructure from scratch...
+─ CONFIGURATION ──────────────────────────────────────────────────────────────
+
+📦 Stack Name: qbusiness-public-sector
+🌿 Branch: main
+🌍 Region: us-east-1
+
+─ APPLICATION SETUP ──────────────────────────────────────────────────────────
+
 Application name [GovernmentAIAssistant]: My Agency Assistant
+✅ Application name validated: My Agency Assistant
 
-Waiting for stack create/update to complete
-Successfully created/updated stack - qbusiness-public-sector
+─ INFRASTRUCTURE DEPLOYMENT ──────────────────────────────────────────────────
+
+🚀 Deploying CloudFormation stack...
+...
 ✅ Infrastructure deployed successfully!
 
-📤 Uploading theme assets...
+─ THEME ASSETS ───────────────────────────────────────────────────────────────
+
+Uploading custom theme assets...
 ✅ Theme assets uploaded successfully
 
-📋 Your configuration:
+─ DEPLOYMENT SUMMARY ─────────────────────────────────────────────────────────
+
 +---------------------------+-----------------------------------------------------------------------------+
 |  AmplifyComputeRoleArn    |  arn:aws:iam::123456789012:role/qbusiness-public-sector-AmplifyComputeRole  |
 |  QBusinessApplicationId   |  abcd1234-5678-90ef-ghij-klmnopqrstuv                                       |
 |  QBusinessWebExperienceId |  abcd1234-5678-90ef-ghij-klmnopqrstuv|wxyz5678-90ab-cdef-1234-567890abcdef  |
+|  SecretsManagerSecretName |  qbusiness-config-qbusiness-public-sector-13c6e240                          |
 |  AmplifyDefaultDomain     |  https://main.d1a2b3c4d5e6f7.amplifyapp.com                                 |
 +---------------------------+-----------------------------------------------------------------------------+
 
-🎉 Deployment complete!
+🎉 DEPLOYMENT COMPLETE!
 
-Next steps:
-1. Visit your AmplifyDefaultDomain to verify deployment
-2. Test locally: npm install && npm start
+NEXT STEPS:
+   1. Visit your AmplifyDefaultDomain to verify deployment
+   2. Test locally: npm install && npm start
+
+✨ Thank you for using Amazon Q Business!
 ```
 
 **Step 3: Test locally (optional).**
@@ -133,7 +148,7 @@ After deployment, you may see this message in the AWS Amplify console:
 
 ![Amplify GitHub App Migration](docs/images/amplify-Migrate-to-our-GitHub-app-message.png)
 
-**Recommendation**: Click the "Start migration" button to migrate to the new GitHub App integration. This provides improved security, better permissions management, and enhanced CI/CD capabilities for your Amplify deployments.
+**Recommendation**: Click the "Start migration" button to migrate to the new GitHub App integration. Use a GitHub app instead of OAuth to access your code repository to trigger builds. GitHub apps offer the same experience but with fewer required permissions.
 
 ## Cleanup
 

@@ -4,8 +4,6 @@ set -e
 # Upload theme assets to S3 bucket created by CloudFormation
 STACK_NAME=${1:-"qbusiness-public-sector"}
 
-echo "🎨 Uploading theme assets to S3..."
-
 # Get bucket name from CloudFormation stack outputs
 BUCKET_NAME=$(aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" \
@@ -19,24 +17,10 @@ if [[ -z "$BUCKET_NAME" ]]; then
   exit 1
 fi
 
-echo "📦 Uploading to bucket: $BUCKET_NAME"
-
-# Upload theme assets
+# Upload theme assets quietly
 cd assets
-aws s3 cp public-sector-theme.css "s3://$BUCKET_NAME/"
-aws s3 cp aws-logo.png "s3://$BUCKET_NAME/"
-aws s3 cp AmazonEmber_Bd.ttf "s3://$BUCKET_NAME/"
-aws s3 cp favicon.ico "s3://$BUCKET_NAME/"
+aws s3 cp public-sector-theme.css "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
+aws s3 cp aws-logo.png "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
+aws s3 cp AmazonEmber_Bd.ttf "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
+aws s3 cp favicon.ico "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
 
-# Get the actual secret name from CloudFormation outputs
-SECRET_NAME=$(aws cloudformation describe-stacks \
-  --stack-name "$STACK_NAME" \
-  --region "${AWS_REGION:-us-east-1}" \
-  --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' \
-  --output text)
-
-echo "✅ Theme assets uploaded successfully"
-echo ""
-echo "Next steps:"
-echo "1. Follow AMPLIFY-SETUP.md to deploy your web application"
-echo "2. Your Q Business configuration is stored in AWS Secrets Manager as '$SECRET_NAME'"
