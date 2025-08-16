@@ -240,13 +240,6 @@ Resources:
                   - logs:PutLogEvents
                 Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*
 
-  # CloudWatch Log Group for Amplify
-  AmplifyLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/amplify/${AWS::StackName}-qbusiness-app
-      RetentionInDays: 14
-
   # IAM Role for Amplify Compute
   AmplifyComputeRole:
     Type: AWS::IAM::Role
@@ -347,6 +340,13 @@ Resources:
           Value: QBusinessPublicSector
         - Key: Environment
           Value: Production
+
+  # CloudWatch Log Group for Amplify
+  AmplifyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/amplify/${AmplifyApp.AppId}
+      RetentionInDays: 14
 
   # AWS WAF WebACL for Amplify
   AmplifyWebACL:
