@@ -311,11 +311,6 @@ Resources:
           - !Ref GitHubBranch
       BuildSpec: !Sub |
         version: 1
-        env:
-          variables:
-            SECRET_NAME: ${QBusinessConfigSecret}
-            REGION: ${AWS::Region}
-            SESSION_DURATION_MINUTES: ${SessionDurationMinutes}
         frontend:
           phases:
             preBuild:
