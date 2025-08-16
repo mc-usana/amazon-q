@@ -155,6 +155,25 @@ Resources:
             Status: Enabled
             ExpirationInDays: 30
 
+  # S3 Bucket Policy for Access Logs - SSL Only
+  AccessLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AccessLogsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureConnections
+            Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource:
+              - !Sub ${AccessLogsBucket.Arn}
+              - !Sub ${AccessLogsBucket.Arn}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
+
   # S3 Bucket for Theme Assets
   # checkov:skip=CKV_AWS_54:Q Business requires public policy access for theming
   # checkov:skip=CKV_AWS_56:Q Business requires public read access for theming
@@ -201,6 +220,16 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+          - Sid: DenyInsecureConnections
+            Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource:
+              - !Sub ${ThemeAssetsBucket.Arn}
+              - !Sub ${ThemeAssetsBucket.Arn}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
           - Sid: PolicyForAmazonQWebAccessForWebExperienceArtifacts
             Effect: Allow
             Principal:
@@ -250,8 +279,8 @@ Resources:
               - kms:DescribeKey
             Resource: '*'
             Condition:
-              ArnEquals:
-                kms:EncryptionContext:aws:logs:arn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/${AWS::StackName}-qbusiness-app
+              ArnLike:
+                kms:EncryptionContext:aws:logs:arn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*
 
   SecretsManagerKMSKeyAlias:
     Type: AWS::KMS::Alias
@@ -309,14 +338,6 @@ Resources:
         FontUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/AmazonEmber_Bd.ttf
         FaviconUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/favicon.ico
 
-  # CloudWatch Log Group for Amplify (created before the app)
-  AmplifyLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/amplify/${AWS::StackName}-qbusiness-app
-      RetentionInDays: 14
-      KmsKeyId: !GetAtt SecretsManagerKMSKey.Arn
-
   # IAM Service Role for Amplify
   AmplifyServiceRole:
     Type: AWS::IAM::Role
@@ -340,7 +361,7 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:DescribeLogGroups
                   - logs:PutLogEvents
-                Resource: !GetAtt AmplifyLogGroup.Arn
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*:*
 
   # IAM Role for Amplify Compute
   AmplifyComputeRole:
@@ -359,20 +380,14 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Sid: PushLogs
+              - Sid: CloudWatchLogsAccess
                 Effect: Allow
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !Sub ${AmplifyLogGroup.Arn}:log-stream:*
-              - Sid: CreateLogGroup
-                Effect: Allow
-                Action: logs:CreateLogGroup
-                Resource: !GetAtt AmplifyLogGroup.Arn
-              - Sid: DescribeLogGroups
-                Effect: Allow
-                Action: logs:DescribeLogGroups
-                Resource: !GetAtt AmplifyLogGroup.Arn
+                  - logs:CreateLogGroup
+                  - logs:DescribeLogGroups
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*:*
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue  # pragma: allowlist secret
                 Resource: !Ref QBusinessConfigSecret

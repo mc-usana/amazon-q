@@ -83,41 +83,63 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   <div class="status">
                       <div class="status-left">
                           <div class="status-dot"></div>
-                          <span id="timer">Session expires in <span id="session-duration">${sessionDuration}</span>:00</span>
+                          <span id="timer">Session expires in <span id="session-duration">--</span>:00</span>
                       </div>
                       <a href="javascript:location.reload()" class="btn">New Session</a>
                   </div>
               </div>
           <script>
-            const sessionId = ${JSON.stringify(sessionId)};
-            let remainingSeconds = ${parseInt(sessionDuration, 10) * 60};
+            // Safely pass server data to client
+            window.appConfig = {
+              sessionId: ${JSON.stringify(sessionId)},
+              sessionDuration: ${parseInt(sessionDuration, 10)},
+              anonymousUrl: ${JSON.stringify(anonymousUrl)}
+            };
             
-
+            let remainingSeconds = window.appConfig.sessionDuration * 60;
             
             function updateTimer() {
               const minutes = Math.floor(remainingSeconds / 60);
               const seconds = remainingSeconds % 60;
               const display = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
               
-              const timerElement = document.getElementById('timer');
               const durationElement = document.getElementById('session-duration');
-              if (timerElement && durationElement) {
+              const timerElement = document.getElementById('timer');
+              
+              if (durationElement && timerElement) {
                 if (remainingSeconds > 0) {
                   durationElement.textContent = display;
                   remainingSeconds--;
                 } else {
                   timerElement.textContent = 'Session expired';
                   timerElement.style.color = 'red';
-                  document.getElementById('qbusiness-iframe').style.display = 'none';
+                  const iframe = document.getElementById('qbusiness-iframe');
+                  if (iframe) iframe.style.display = 'none';
                 }
               }
             }
             
-            setInterval(updateTimer, 1000);
-            window.onload = updateTimer;
+            function initializeApp() {
+              // Set iframe source safely
+              const iframe = document.getElementById('qbusiness-iframe');
+              if (iframe && window.appConfig.anonymousUrl) {
+                iframe.src = window.appConfig.anonymousUrl;
+              }
+              
+              // Start timer
+              updateTimer();
+              setInterval(updateTimer, 1000);
+            }
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', initializeApp);
+            } else {
+              initializeApp();
+            }
           </script> 
               <div class="iframe-container">
-                  <iframe id="qbusiness-iframe" src="${anonymousUrl}"></iframe>
+                  <iframe id="qbusiness-iframe" src="about:blank"></iframe>
               </div>
               <div class="footer">
                   Coversation history is not available after session expiration.<br>
