@@ -73,12 +73,31 @@ echo "✅ Theme assets uploaded successfully"
 echo ""
 
 echo ""
+echo "─ LOCAL DEVELOPMENT SETUP ────────────────────────────────────────────────────"
+echo ""
+echo "Creating local .env file for development..."
+SECRET_NAME=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --region "$AWS_REGION" \
+  --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' \
+  --output text)
+
+cat > config/.env << EOF
+SECRET_NAME=$SECRET_NAME
+REGION=$AWS_REGION
+SESSION_DURATION_MINUTES=15
+EOF
+
+echo "✅ Local .env created for development"
+echo ""
+
+echo ""
 echo "─ AMPLIFY DEPLOYMENT ─────────────────────────────────────────────────────────"
 echo ""
 if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
     echo "Committing changes to trigger Amplify build..."
     git add -A
-    git commit -m "Update infrastructure configuration" || echo "No changes to commit"
+    git commit --allow-empty -m "Update infrastructure configuration"
     git push origin "$GITHUB_BRANCH"
     echo "✅ Changes pushed to trigger Amplify deployment"
     
