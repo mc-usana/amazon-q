@@ -81,6 +81,74 @@ if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
     git commit -m "Update infrastructure configuration" || echo "No changes to commit"
     git push origin "$GITHUB_BRANCH"
     echo "✅ Changes pushed to trigger Amplify deployment"
+    
+    echo ""
+    echo "⏳ Monitoring Amplify build progress..."
+    
+    # Get Amplify App ID from stack outputs
+    AMPLIFY_APP_ID=$(aws cloudformation describe-stacks \
+      --stack-name "$STACK_NAME" \
+      --region "$AWS_REGION" \
+      --query 'Stacks[0].Outputs[?OutputKey==`AmplifyAppId`].OutputValue' \
+      --output text)
+    
+    # Monitor build status
+    while true; do
+        LATEST_JOB=$(aws amplify list-jobs \
+          --app-id "$AMPLIFY_APP_ID" \
+          --branch-name "$GITHUB_BRANCH" \
+          --region "$AWS_REGION" \
+          --query 'jobSummaries[0].status' \
+          --output text)
+        
+        case "$LATEST_JOB" in
+            "RUNNING"|"PENDING")
+                echo "Build status: $LATEST_JOB - in progress..."
+                sleep 30
+                ;;
+            "SUCCEED")
+                echo "✅ Amplify build completed successfully!"
+                
+                # Update Q Business web experience with Amplify domain
+                echo "🔗 Adding Amplify domain to Q Business allowed origins..."
+                
+                AMPLIFY_DOMAIN=$(aws cloudformation describe-stacks \
+                  --stack-name "$STACK_NAME" \
+                  --region "$AWS_REGION" \
+                  --query 'Stacks[0].Outputs[?OutputKey==`AmplifyDefaultDomain`].OutputValue' \
+                  --output text)
+                
+                QBUSINESS_APP_ID=$(aws cloudformation describe-stacks \
+                  --stack-name "$STACK_NAME" \
+                  --region "$AWS_REGION" \
+                  --query 'Stacks[0].Outputs[?OutputKey==`QBusinessApplicationId`].OutputValue' \
+                  --output text)
+                
+                QBUSINESS_WEB_EXP_ID=$(aws cloudformation describe-stacks \
+                  --stack-name "$STACK_NAME" \
+                  --region "$AWS_REGION" \
+                  --query 'Stacks[0].Outputs[?OutputKey==`QBusinessWebExperienceId`].OutputValue' \
+                  --output text | cut -d'|' -f2)
+                
+                aws qbusiness update-web-experience \
+                  --application-id "$QBUSINESS_APP_ID" \
+                  --web-experience-id "$QBUSINESS_WEB_EXP_ID" \
+                  --origins "$AMPLIFY_DOMAIN" "http://localhost:3000" \
+                  --region "$AWS_REGION"
+                
+                echo "✅ Q Business web experience updated with Amplify domain"
+                break
+                ;;
+            "FAILED"|"CANCELLED")
+                echo "❌ Amplify build failed with status: $LATEST_JOB"
+                exit 1
+                ;;
+            *)
+                echo "Unknown build status: $LATEST_JOB"
+                break
+                ;;
+        esac
+    done
 else
     echo "⚠️  No GitHub integration - Amplify deployment requires manual setup"
 fi
