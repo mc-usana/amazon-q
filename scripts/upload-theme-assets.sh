@@ -24,6 +24,13 @@ AMPLIFY_DOMAIN=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`AmplifyDefaultDomain`].OutputValue' \
   --output text)
 
+# Get developer origins from CloudFormation parameters
+DEVELOPER_ORIGINS=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --region "$AWS_REGION" \
+  --query 'Stacks[0].Parameters[?ParameterKey==`DeveloperOrigins`].ParameterValue' \
+  --output text)
+
 if [[ -z "$BUCKET_NAME" ]]; then
   echo "❌ Could not find ThemeBucketName in stack outputs"
   exit 1
@@ -42,6 +49,20 @@ fi
 # Extract domains from endpoints (remove https:// and trailing /)
 WEB_EXPERIENCE_DOMAIN=$(echo "$WEB_EXPERIENCE_ENDPOINT" | sed 's|https://||' | sed 's|/$||')
 AMPLIFY_DOMAIN_CLEAN=$(echo "$AMPLIFY_DOMAIN" | sed 's|https://||' | sed 's|/$||')
+
+# Clean developer origins (remove https:// and trailing /)
+DEVELOPER_ORIGINS_CLEAN=""
+if [[ -n "$DEVELOPER_ORIGINS" ]]; then
+  IFS=',' read -ra ORIGINS_ARRAY <<< "$DEVELOPER_ORIGINS"
+  for origin in "${ORIGINS_ARRAY[@]}"; do
+    clean_origin=$(echo "$origin" | sed 's|https\?://||' | sed 's|/$||')
+    if [[ -n "$DEVELOPER_ORIGINS_CLEAN" ]]; then
+      DEVELOPER_ORIGINS_CLEAN="$DEVELOPER_ORIGINS_CLEAN,\"$clean_origin\""
+    else
+      DEVELOPER_ORIGINS_CLEAN="\"$clean_origin\""
+    fi
+  done
+fi
 
 # Upload theme assets quietly
 cd assets
@@ -92,7 +113,7 @@ BUCKET_POLICY=$(cat <<EOF
       "Resource": [$RESOURCE_ARNS],
       "Condition": {
         "StringLike": {
-          "aws:Referer": ["$WEB_EXPERIENCE_DOMAIN", "$AMPLIFY_DOMAIN_CLEAN", "localhost:3000"]
+          "aws:Referer": ["$WEB_EXPERIENCE_DOMAIN", "$AMPLIFY_DOMAIN_CLEAN"$(if [[ -n "$DEVELOPER_ORIGINS_CLEAN" ]]; then echo ", $DEVELOPER_ORIGINS_CLEAN"; fi)]
         },
         "Bool": {
           "aws:SecureTransport": "true"
@@ -124,13 +145,17 @@ QBUSINESS_WEB_EXP_ID=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`QBusinessWebExperienceId`].OutputValue' \
   --output text | cut -d'|' -f2)
 
-# Update Q Business web experience with theme customization
+# Update Q Business web experience with theme customization and add Amplify domain to origins
+CURRENT_ORIGINS=$(echo "$DEVELOPER_ORIGINS" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')
+AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
+
 aws qbusiness update-web-experience \
   --application-id "$QBUSINESS_APP_ID" \
   --web-experience-id "$QBUSINESS_WEB_EXP_ID" \
   --customization-configuration "{\"customCSSUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/public-sector-theme.css\",\"logoUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/aws-logo.png\",\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/AmazonEmber_Bd.ttf\",\"faviconUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/favicon.ico\"}" \
+  --origins "[$AMPLIFY_ORIGINS]" \
   --region "$AWS_REGION" \
   --no-cli-pager >/dev/null 2>&1
 
-echo "✅ Theme assets uploaded, bucket policy updated, and Q Business web experience configured"
+echo "✅ Theme assets uploaded, bucket policy updated, and Q Business web experience configured with Amplify domain"
 

@@ -14,12 +14,12 @@ if (!process.env.AWS_LAMBDA_FUNCTION_NAME && existsSync('config/.env')) {
 }
 
 // Log environment variables for debugging
-console.log('Environment variables:', {
-  QBUSINESS_CONFIG_ID: process.env.QBUSINESS_CONFIG_ID ? 'SET' : 'MISSING',
-  REGION: (process.env.AWS_REGION || process.env.REGION) ? 'SET' : 'MISSING',
-  SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES ? 'SET' : 'MISSING',
-  PORT: process.env.PORT || '3000'
-});
+// console.log('Environment variables:', {
+//   QBUSINESS_CONFIG_ID: process.env.QBUSINESS_CONFIG_ID ? 'SET' : 'MISSING',
+//   REGION: (process.env.AWS_REGION || process.env.REGION) ? 'SET' : 'MISSING',
+//   SESSION_DURATION_MINUTES: process.env.SESSION_DURATION_MINUTES ? 'SET' : 'MISSING',
+//   PORT: process.env.PORT || '3000'
+// });
 
 // Configure AWS SDK client to use the default credential provider chain
 // This will automatically use the IAM role associated with the Amplify Compute environment

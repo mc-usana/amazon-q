@@ -27,12 +27,12 @@ Parameters:
   GitHubRepository:
     Description: GitHub repository URL (optional - for automatic deployment)
     Type: String
-    Default: ''
+    Default: ""
 
   GitHubAccessToken:
     Description: GitHub personal access token (optional - for automatic deployment)
     Type: String
-    Default: ''
+    Default: ""
     NoEcho: true
 
   GitHubBranch:
@@ -40,15 +40,20 @@ Parameters:
     Type: String
     Default: main
 
+  DeveloperOrigins:
+    Description: Optional comma-delimited list of developer origins for Q Business web experience (e.g., http://localhost:3000,http://localhost:8080)
+    Type: CommaDelimitedList
+    Default: "http://localhost:3000"
+
 Conditions:
   HasGitHubRepo: !Not
     - !Equals
       - !Ref GitHubRepository
-      - ''
+      - ""
   HasGitHubToken: !Not
     - !Equals
       - !Ref GitHubAccessToken
-      - ''
+      - ""
 
 Resources:
   # IAM Role for Q Business Web Experience
@@ -56,7 +61,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -80,7 +85,7 @@ Resources:
       Description: Q Web Experience Managed Policy
       Path: /service-role/
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
@@ -132,7 +137,7 @@ Resources:
           UniqueId: !Select
             - 0
             - !Split
-              - '-'
+              - "-"
               - !Select
                 - 2
                 - !Split
@@ -166,18 +171,18 @@ Resources:
     Properties:
       Bucket: !Ref AccessLogsBucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Sid: DenyInsecureConnections
             Effect: Deny
-            Principal: '*'
+            Principal: "*"
             Action: s3:*
             Resource:
               - !Sub ${AccessLogsBucket.Arn}
               - !Sub ${AccessLogsBucket.Arn}/*
             Condition:
               Bool:
-                aws:SecureTransport: 'false'
+                aws:SecureTransport: "false"
 
   # S3 Bucket for Theme Assets
   # checkov:skip=CKV_AWS_S10:Bucket policy applied dynamically by upload script with Referer condition
@@ -199,7 +204,7 @@ Resources:
           UniqueId: !Select
             - 0
             - !Split
-              - '-'
+              - "-"
               - !Select
                 - 2
                 - !Split
@@ -237,7 +242,7 @@ Resources:
           UniqueId: !Select
             - 0
             - !Split
-              - '-'
+              - "-"
               - !Select
                 - 2
                 - !Split
@@ -250,7 +255,7 @@ Resources:
         - WebExperienceId: !Select
             - 1
             - !Split
-              - '|'
+              - "|"
               - !Ref QBusinessWebExperience
 
   # Q Business Web Experience with Government Customization
@@ -267,6 +272,7 @@ Resources:
         information from approved government resources. How may I assist you
         today?
       SamplePromptsControlMode: ENABLED
+      Origins: !Ref DeveloperOrigins
 
   # IAM Service Role for Amplify
   AmplifyServiceRole:
@@ -279,7 +285,7 @@ Resources:
     Properties:
       RoleName: !Sub ${AWS::StackName}-AmplifyServiceRole
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -288,7 +294,7 @@ Resources:
       Policies:
         - PolicyName: CloudWatchLogsAccess
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -309,7 +315,7 @@ Resources:
     Properties:
       RoleName: !Sub ${AWS::StackName}-AmplifyComputeRole
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -319,7 +325,7 @@ Resources:
       Policies:
         - PolicyName: AmplifyComputePolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Sid: PushLogs
                 Effect: Allow
@@ -336,7 +342,7 @@ Resources:
                 Action: logs:DescribeLogGroups
                 Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
               - Effect: Allow
-                Action: secretsmanager:GetSecretValue  # pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue # pragma: allowlist secret
                 Resource: !Ref QBusinessConfigSecret
               - Effect: Allow
                 Action: qbusiness:CreateAnonymousWebExperienceUrl
@@ -347,14 +353,13 @@ Resources:
                     - WebExperienceId: !Select
                         - 1
                         - !Split
-                          - '|'
+                          - "|"
                           - !Ref QBusinessWebExperience
 
   # Amplify Application
   AmplifyApp:
     Type: AWS::Amplify::App
     DependsOn:
-      - QBusinessWebExperience
       - QBusinessConfigSecret
     Properties:
       Name: !Sub ${AWS::StackName}-qbusiness-app
@@ -399,8 +404,6 @@ Resources:
           Value: !Ref AWS::Region
         - Name: SESSION_DURATION_MINUTES
           Value: !Ref SessionDurationMinutes
-        - Name: QBUSINESS_WEB_EXPERIENCE_ENDPOINT
-          Value: !GetAtt QBusinessWebExperience.DefaultEndpoint
       Tags:
         - Key: Project
           Value: QBusinessPublicSector
@@ -503,7 +506,7 @@ Outputs:
         UniqueId: !Select
           - 0
           - !Split
-            - '-'
+            - "-"
             - !Select
               - 2
               - !Split
