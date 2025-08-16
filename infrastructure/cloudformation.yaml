@@ -121,6 +121,7 @@ Resources:
       Type: NATIVE_INDEX
 
   # S3 Bucket for Access Logs
+  # checkov:skip=CKV_AWS_18:Access logs bucket cannot log to itself
   AccessLogsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -138,10 +139,16 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
       LifecycleConfiguration:
         Rules:
           - Id: DeleteOldLogs
@@ -149,6 +156,8 @@ Resources:
             ExpirationInDays: 30
 
   # S3 Bucket for Theme Assets
+  # checkov:skip=CKV_AWS_54:Q Business requires public policy access for theming
+  # checkov:skip=CKV_AWS_56:Q Business requires public read access for theming
   ThemeAssetsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -170,6 +179,10 @@ Resources:
         BlockPublicPolicy: false
         IgnorePublicAcls: true
         RestrictPublicBuckets: false
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
@@ -202,6 +215,50 @@ Resources:
               Bool:
                 aws:SecureTransport: 'true'
 
+  # KMS Key for Secrets Manager
+  SecretsManagerKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS Key for Q Business Secrets Manager encryption
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow Secrets Manager
+            Effect: Allow
+            Principal:
+              Service: secretsmanager.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource: '*'
+          - Sid: Allow CloudWatch Logs
+            Effect: Allow
+            Principal:
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: '*'
+            Condition:
+              ArnEquals:
+                kms:EncryptionContext:aws:logs:arn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/${AWS::StackName}-qbusiness-app
+
+  SecretsManagerKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-secrets-key
+      TargetKeyId: !Ref SecretsManagerKMSKey
+
   # Secrets Manager Secret for Q Business Configuration
   QBusinessConfigSecret:
     Type: AWS::SecretsManager::Secret
@@ -219,6 +276,7 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       Description: Q Business Application and Web Experience IDs for Amplify app
+      KmsKeyId: !Ref SecretsManagerKMSKey
       SecretString: !Sub
         - '{"QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}",
           "QBUSINESS_WEB_EXP_ID": "${WebExperienceId}"}'
@@ -251,6 +309,14 @@ Resources:
         FontUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/AmazonEmber_Bd.ttf
         FaviconUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/favicon.ico
 
+  # CloudWatch Log Group for Amplify (created before the app)
+  AmplifyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/amplify/${AWS::StackName}-qbusiness-app
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt SecretsManagerKMSKey.Arn
+
   # IAM Service Role for Amplify
   AmplifyServiceRole:
     Type: AWS::IAM::Role
@@ -274,7 +340,7 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:DescribeLogGroups
                   - logs:PutLogEvents
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*
+                Resource: !GetAtt AmplifyLogGroup.Arn
 
   # IAM Role for Amplify Compute
   AmplifyComputeRole:
@@ -288,7 +354,6 @@ Resources:
             Principal:
               Service: amplify.amazonaws.com
             Action: sts:AssumeRole
-
       Policies:
         - PolicyName: AmplifyComputePolicy
           PolicyDocument:
@@ -299,17 +364,17 @@ Resources:
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*:log-stream:*
+                Resource: !Sub ${AmplifyLogGroup.Arn}:log-stream:*
               - Sid: CreateLogGroup
                 Effect: Allow
                 Action: logs:CreateLogGroup
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*
+                Resource: !GetAtt AmplifyLogGroup.Arn
               - Sid: DescribeLogGroups
                 Effect: Allow
                 Action: logs:DescribeLogGroups
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+                Resource: !GetAtt AmplifyLogGroup.Arn
               - Effect: Allow
-                Action: secretsmanager:GetSecretValue
+                Action: secretsmanager:GetSecretValue  # pragma: allowlist secret
                 Resource: !Ref QBusinessConfigSecret
               - Effect: Allow
                 Action: qbusiness:CreateAnonymousWebExperienceUrl
@@ -374,13 +439,6 @@ Resources:
           Value: QBusinessPublicSector
         - Key: Environment
           Value: Production
-
-  # CloudWatch Log Group for Amplify
-  AmplifyLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/amplify/${AmplifyApp.AppId}
-      RetentionInDays: 14
 
   # AWS WAF WebACL for Amplify
   AmplifyWebACL:

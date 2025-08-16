@@ -83,14 +83,14 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   <div class="status">
                       <div class="status-left">
                           <div class="status-dot"></div>
-                          <span id="timer">Session expires in ${sessionDuration}:00</span>
+                          <span id="timer">Session expires in <span id="session-duration">${sessionDuration}</span>:00</span>
                       </div>
                       <a href="javascript:location.reload()" class="btn">New Session</a>
                   </div>
               </div>
           <script>
-            const sessionId = '${sessionId}';
-            let remainingSeconds = ${sessionDuration * 60};
+            const sessionId = ${JSON.stringify(sessionId)};
+            let remainingSeconds = ${parseInt(sessionDuration, 10) * 60};
             
 
             
@@ -100,9 +100,10 @@ app.get('/', noCacheMiddleware, async (req, res) => {
               const display = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
               
               const timerElement = document.getElementById('timer');
-              if (timerElement) {
+              const durationElement = document.getElementById('session-duration');
+              if (timerElement && durationElement) {
                 if (remainingSeconds > 0) {
-                  timerElement.textContent = 'Session expires in ' + display;
+                  durationElement.textContent = display;
                   remainingSeconds--;
                 } else {
                   timerElement.textContent = 'Session expired';
