@@ -25,13 +25,11 @@
   "computeResources": [
     {
       "name": "default",
-      "runtime": "nodejs18.x",
+      "runtime": "nodejs20.x",
       "entrypoint": "index.js",
-      "nodeOptions": "--experimental-modules",
       "environmentVariables": {
-        "QBUSINESS_APP_ID": "${QBUSINESS_APP_ID}",
-        "QBUSINESS_WEB_EXP_ID": "${QBUSINESS_WEB_EXP_ID}",
-        "AWS_REGION": "${AWS_REGION}",
+        "SECRET_NAME": "${SECRET_NAME}",
+        "REGION": "${REGION}",
         "SESSION_DURATION_MINUTES": "${SESSION_DURATION_MINUTES}",
         "NODE_ENV": "production"
       }

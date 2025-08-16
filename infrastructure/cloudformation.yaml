@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Complete Q Business Public Sector Application with S3 theme assets, Secrets Manager, and customized web experience
+Description: Complete Q Business Public Sector Application with S3 theme assets,
+  Secrets Manager, and customized web experience
 
 Parameters:
   QBusinessApplicationName:
@@ -8,82 +9,88 @@ Parameters:
     Default: GovernmentAIAssistant
     AllowedPattern: ^[a-zA-Z0-9][a-zA-Z0-9_-]*$
     ConstraintDescription: Must contain only alphanumeric characters, hyphens, and underscores
-  
+
   SessionDurationMinutes:
     Description: Session duration in minutes for anonymous users
     Type: Number
     Default: 15
     MinValue: 15
     MaxValue: 60
-  
+
   ThemeBucketName:
     Description: S3 bucket name for theme assets (must be globally unique)
     Type: String
     Default: qbusiness-theme
     AllowedPattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
     ConstraintDescription: Must be a valid S3 bucket name
-  
+
   GitHubRepository:
     Description: GitHub repository URL (optional - for automatic deployment)
     Type: String
     Default: ''
-  
+
   GitHubAccessToken:
     Description: GitHub personal access token (optional - for automatic deployment)
     Type: String
     Default: ''
     NoEcho: true
-  
+
   GitHubBranch:
     Description: GitHub branch to deploy (optional - defaults to main)
     Type: String
     Default: main
 
 Conditions:
-  HasGitHubRepo: !Not [!Equals [!Ref GitHubRepository, '']]
-  HasGitHubToken: !Not [!Equals [!Ref GitHubAccessToken, '']]
+  HasGitHubRepo: !Not
+    - !Equals
+      - !Ref GitHubRepository
+      - ''
+  HasGitHubToken: !Not
+    - !Equals
+      - !Ref GitHubAccessToken
+      - ''
 
 Resources:
   # IAM Role for Q Business Web Experience
   QBusinessWebExperienceServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      AssumeRolePolicyDocument: 
-        Version: "2012-10-17"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
-            Principal: 
+            Principal:
               Service: application.qbusiness.amazonaws.com
-            Action: 
-              - 'sts:AssumeRole'
-              - 'sts:SetContext'              
+            Action:
+              - sts:AssumeRole
+              - sts:SetContext
             Condition:
-              StringEquals: 
-                "aws:SourceAccount": !Sub "${AWS::AccountId}"
-              ArnLike: 
-                "aws:SourceArn": !Sub "arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}"
+              StringEquals:
+                aws:SourceAccount: !Sub ${AWS::AccountId}
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}
       Path: /service-role/
       ManagedPolicyArns:
         - !Ref QBusinessWebExperienceServiceManagedPolicy
-      
+
   # Managed Policy for Web Experience
   QBusinessWebExperienceServiceManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
-    Properties:      
+    Properties:
       Description: Q Web Experience Managed Policy
       Path: /service-role/
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
-            Action: 
-            - "qbusiness:Chat"
-            - "qbusiness:ChatSync"
-            - "qbusiness:PutFeedback"
-            - "qbusiness:GetWebExperience"
-            - "qbusiness:GetApplication"
-            - "qbusiness:GetChatControlsConfiguration"           
-            Resource: !Sub "arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}"
+            Action:
+              - qbusiness:Chat
+              - qbusiness:ChatSync
+              - qbusiness:PutFeedback
+              - qbusiness:GetWebExperience
+              - qbusiness:GetApplication
+              - qbusiness:GetChatControlsConfiguration
+            Resource: !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}
 
   # Q Business Application with Anonymous access
   QBusinessApp:
@@ -98,30 +105,38 @@ Resources:
   QBusinessIndex:
     Type: AWS::QBusiness::Index
     Properties:
-     ApplicationId: !GetAtt QBusinessApp.ApplicationId
-     DisplayName: qbusiness-index
-     Type: STARTER
+      ApplicationId: !GetAtt QBusinessApp.ApplicationId
+      DisplayName: qbusiness-index
+      Type: STARTER
 
   # Q Business Retriever
   QBusinessRetriver:
     Type: AWS::QBusiness::Retriever
     Properties:
-     ApplicationId: !GetAtt QBusinessApp.ApplicationId
-     Configuration:
-      NativeIndexConfiguration:
-        IndexId: !GetAtt QBusinessIndex.IndexId
-     DisplayName: qbusiness-retriever
-     Type: NATIVE_INDEX
+      ApplicationId: !GetAtt QBusinessApp.ApplicationId
+      Configuration:
+        NativeIndexConfiguration:
+          IndexId: !GetAtt QBusinessIndex.IndexId
+      DisplayName: qbusiness-retriever
+      Type: NATIVE_INDEX
 
   # S3 Bucket for Theme Assets
   ThemeAssetsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 
-        - '${BucketName}-${StackName}-${UniqueId}'
+      BucketName: !Sub
+        - ${BucketName}-${StackName}-${UniqueId}
         - BucketName: !Ref ThemeBucketName
-          StackName: !Ref 'AWS::StackName'
-          UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
+          StackName: !Ref AWS::StackName
+          UniqueId: !Select
+            - 0
+            - !Split
+              - '-'
+              - !Select
+                - 2
+                - !Split
+                  - /
+                  - !Ref AWS::StackId
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -143,51 +158,68 @@ Resources:
               Service: application.qbusiness.amazonaws.com
             Action: s3:GetObject
             Resource:
-              - !Sub '${ThemeAssetsBucket.Arn}/public-sector-theme.css'
-              - !Sub '${ThemeAssetsBucket.Arn}/aws-logo.png'
-              - !Sub '${ThemeAssetsBucket.Arn}/AmazonEmber_Bd.ttf'
-              - !Sub '${ThemeAssetsBucket.Arn}/favicon.ico'
+              - !Sub ${ThemeAssetsBucket.Arn}/public-sector-theme.css
+              - !Sub ${ThemeAssetsBucket.Arn}/aws-logo.png
+              - !Sub ${ThemeAssetsBucket.Arn}/AmazonEmber_Bd.ttf
+              - !Sub ${ThemeAssetsBucket.Arn}/favicon.ico
             Condition:
               Bool:
-                'aws:SecureTransport': 'true'
+                aws:SecureTransport: 'true'
 
   # Secrets Manager Secret for Q Business Configuration
   QBusinessConfigSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: !Sub 
-        - 'qbusiness-config-${StackName}-${UniqueId}'
-        - StackName: !Ref 'AWS::StackName'
-          UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
+      Name: !Sub
+        - qbusiness-config-${StackName}-${UniqueId}
+        - StackName: !Ref AWS::StackName
+          UniqueId: !Select
+            - 0
+            - !Split
+              - '-'
+              - !Select
+                - 2
+                - !Split
+                  - /
+                  - !Ref AWS::StackId
       Description: Q Business Application and Web Experience IDs for Amplify app
-      SecretString: !Sub 
-        - '{"QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}", "QBUSINESS_WEB_EXP_ID": "${WebExperienceId}"}'
-        - WebExperienceId: !Select [1, !Split ['|', !Ref QBusinessWebExperience]]
+      SecretString: !Sub
+        - '{"QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}",
+          "QBUSINESS_WEB_EXP_ID": "${WebExperienceId}"}'
+        - WebExperienceId: !Select
+            - 1
+            - !Split
+              - '|'
+              - !Ref QBusinessWebExperience
 
   # Q Business Web Experience with Government Customization
   QBusinessWebExperience:
     Type: AWS::QBusiness::WebExperience
-    DependsOn: [ThemeAssetsBucket, ThemeAssetsBucketPolicy]
+    DependsOn:
+      - ThemeAssetsBucket
+      - ThemeAssetsBucketPolicy
     Properties:
-     ApplicationId: !GetAtt QBusinessApp.ApplicationId
-     RoleArn: !GetAtt QBusinessWebExperienceServiceRole.Arn
-     Title: Demo Government AI Assistant
-     Subtitle: Providing secure information access for public sector agencies
-     WelcomeMessage: Welcome to your secure AI assistant. I can help you find information from approved government resources. How may I assist you today?
-     SamplePromptsControlMode: ENABLED
-     Origins:
-       - 'http://localhost:3000'
-     CustomizationConfiguration:
-       CustomCSSUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css'
-       LogoUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/aws-logo.png'
-       FontUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/AmazonEmber_Bd.ttf'
-       FaviconUrl: !Sub 'https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/favicon.ico'
+      ApplicationId: !GetAtt QBusinessApp.ApplicationId
+      RoleArn: !GetAtt QBusinessWebExperienceServiceRole.Arn
+      Title: Demo Government AI Assistant
+      Subtitle: Providing secure information access for public sector agencies
+      WelcomeMessage: Welcome to your secure AI assistant. I can help you find
+        information from approved government resources. How may I assist you
+        today?
+      SamplePromptsControlMode: ENABLED
+      Origins:
+        - http://localhost:3000
+      CustomizationConfiguration:
+        CustomCSSUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/public-sector-theme.css
+        LogoUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/aws-logo.png
+        FontUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/AmazonEmber_Bd.ttf
+        FaviconUrl: !Sub https://${ThemeAssetsBucket}.s3.${AWS::Region}.amazonaws.com/favicon.ico
 
   # IAM Service Role for Amplify
   AmplifyServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${AWS::StackName}-AmplifyServiceRole'
+      RoleName: !Sub ${AWS::StackName}-AmplifyServiceRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -206,20 +238,20 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:DescribeLogGroups
                   - logs:PutLogEvents
-                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*'
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*
 
   # CloudWatch Log Group for Amplify
   AmplifyLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/aws/amplify/${AWS::StackName}-qbusiness-app'
+      LogGroupName: !Sub /aws/amplify/${AWS::StackName}-qbusiness-app
       RetentionInDays: 14
 
   # IAM Role for Amplify Compute
   AmplifyComputeRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${AWS::StackName}-AmplifyComputeRole'
+      RoleName: !Sub ${AWS::StackName}-AmplifyComputeRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -238,37 +270,46 @@ Resources:
                 Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*:log-stream:*'
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*:log-stream:*
               - Sid: CreateLogGroup
                 Effect: Allow
                 Action: logs:CreateLogGroup
-                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*'
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/*
               - Sid: DescribeLogGroups
                 Effect: Allow
                 Action: logs:DescribeLogGroups
-                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*'
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref QBusinessConfigSecret
               - Effect: Allow
                 Action: qbusiness:CreateAnonymousWebExperienceUrl
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}'
-                  - !Sub 
-                    - 'arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}/web-experience/${WebExperienceId}'
-                    - WebExperienceId: !Select [1, !Split ['|', !Ref QBusinessWebExperience]]
+                  - !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}
+                  - !Sub
+                    - arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}/web-experience/${WebExperienceId}
+                    - WebExperienceId: !Select
+                        - 1
+                        - !Split
+                          - '|'
+                          - !Ref QBusinessWebExperience
 
   # Amplify Application
   AmplifyApp:
     Type: AWS::Amplify::App
     Properties:
-      Name: !Sub '${AWS::StackName}-qbusiness-app'
-      Description: 'Q Business Anonymous Web Experience with Custom Theming'
+      Name: !Sub ${AWS::StackName}-qbusiness-app
+      Description: Q Business Anonymous Web Experience with Custom Theming
       Platform: WEB_COMPUTE
       IAMServiceRole: !GetAtt AmplifyServiceRole.Arn
-      ComputeRoleArn: !GetAtt AmplifyComputeRole.Arn
-      Repository: !If [HasGitHubRepo, !Ref GitHubRepository, !Ref 'AWS::NoValue']
-      AccessToken: !If [HasGitHubToken, !Ref GitHubAccessToken, !Ref 'AWS::NoValue']
+      Repository: !If
+        - HasGitHubRepo
+        - !Ref GitHubRepository
+        - !Ref AWS::NoValue
+      AccessToken: !If
+        - HasGitHubToken
+        - !Ref GitHubAccessToken
+        - !Ref AWS::NoValue
       AutoBranchCreationConfig:
         EnableAutoBranchCreation: true
         EnableAutoBuild: true
@@ -311,7 +352,7 @@ Resources:
   AmplifyWebACL:
     Type: AWS::WAFv2::WebACL
     Properties:
-      Name: !Sub '${AWS::StackName}-amplify-waf'
+      Name: !Sub ${AWS::StackName}-amplify-waf
       Description: WAF for Amplify application protection
       Scope: CLOUDFRONT
       DefaultAction:
@@ -344,59 +385,14 @@ Resources:
       VisibilityConfig:
         SampledRequestsEnabled: true
         CloudWatchMetricsEnabled: true
-        MetricName: !Sub '${AWS::StackName}-amplify-waf'
+        MetricName: !Sub ${AWS::StackName}-amplify-waf
 
   # AWS WAF WebACL Association with Amplify
   AmplifyWAFAssociation:
     Type: AWS::WAFv2::WebACLAssociation
     Properties:
       ResourceArn: !GetAtt AmplifyApp.Arn
-      WebAclArn: !GetAtt AmplifyWebACL.Arn
-
-  AmplifyBranch:
-    Type: AWS::WAFv2::WebACL
-    Properties:
-      Name: !Sub '${AWS::StackName}-amplify-waf'
-      Description: WAF for Amplify application protection
-      Scope: CLOUDFRONT
-      DefaultAction:
-        Allow: {}
-      Rules:
-        - Name: AWSManagedRulesCommonRuleSet
-          Priority: 1
-          OverrideAction:
-            None: {}
-          Statement:
-            ManagedRuleGroupStatement:
-              VendorName: AWS
-              Name: AWSManagedRulesCommonRuleSet
-          VisibilityConfig:
-            SampledRequestsEnabled: true
-            CloudWatchMetricsEnabled: true
-            MetricName: CommonRuleSetMetric
-        - Name: AWSManagedRulesKnownBadInputsRuleSet
-          Priority: 2
-          OverrideAction:
-            None: {}
-          Statement:
-            ManagedRuleGroupStatement:
-              VendorName: AWS
-              Name: AWSManagedRulesKnownBadInputsRuleSet
-          VisibilityConfig:
-            SampledRequestsEnabled: true
-            CloudWatchMetricsEnabled: true
-            MetricName: KnownBadInputsRuleSetMetric
-      VisibilityConfig:
-        SampledRequestsEnabled: true
-        CloudWatchMetricsEnabled: true
-        MetricName: !Sub '${AWS::StackName}-amplify-waf'
-
-  # AWS WAF WebACL Association with Amplify
-  AmplifyWAFAssociation:
-    Type: AWS::WAFv2::WebACLAssociation
-    Properties:
-      ResourceArn: !GetAtt AmplifyApp.Arn
-      WebAclArn: !GetAtt AmplifyWebACL.Arn
+      WebACLArn: !GetAtt AmplifyWebACL.Arn
 
   AmplifyBranch:
     Type: AWS::Amplify::Branch
@@ -413,65 +409,64 @@ Outputs:
     Description: The ID of the QBusiness application
     Value: !GetAtt QBusinessApp.ApplicationId
     Export:
-      Name: !Sub '${AWS::StackName}-QBusinessAppId'
-    
+      Name: !Sub ${AWS::StackName}-QBusinessAppId
+
   QBusinessWebExperienceId:
     Description: The ID of the QBusiness web experience
     Value: !Ref QBusinessWebExperience
     Export:
-      Name: !Sub '${AWS::StackName}-QBusinessWebExpId'
-  
+      Name: !Sub ${AWS::StackName}-QBusinessWebExpId
+
   ThemeBucketName:
     Description: S3 bucket name for theme assets
     Value: !Ref ThemeAssetsBucket
     Export:
-      Name: !Sub '${AWS::StackName}-ThemeBucket'
-  
+      Name: !Sub ${AWS::StackName}-ThemeBucket
+
   SecretsManagerSecretName:
     Description: Name of the Secrets Manager secret containing Q Business configuration
-    Value: !Sub 
-      - 'qbusiness-config-${StackName}-${UniqueId}'
-      - StackName: !Ref 'AWS::StackName'
-        UniqueId: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
+    Value: !Sub
+      - qbusiness-config-${StackName}-${UniqueId}
+      - StackName: !Ref AWS::StackName
+        UniqueId: !Select
+          - 0
+          - !Split
+            - '-'
+            - !Select
+              - 2
+              - !Split
+                - /
+                - !Ref AWS::StackId
     Export:
-      Name: !Sub '${AWS::StackName}-SecretName'
-  
+      Name: !Sub ${AWS::StackName}-SecretName
+
   AmplifyComputeRoleArn:
     Description: ARN of the IAM role for Amplify Compute
     Value: !GetAtt AmplifyComputeRole.Arn
     Export:
-      Name: !Sub '${AWS::StackName}-AmplifyRoleArn'
-  
+      Name: !Sub ${AWS::StackName}-AmplifyRoleArn
+
   AmplifyAppId:
     Description: Amplify App ID
     Value: !GetAtt AmplifyApp.AppId
     Export:
-      Name: !Sub '${AWS::StackName}-AmplifyAppId'
-  
+      Name: !Sub ${AWS::StackName}-AmplifyAppId
+
   AmplifyAppArn:
     Description: Amplify App ARN
     Value: !GetAtt AmplifyApp.Arn
     Export:
-      Name: !Sub '${AWS::StackName}-AmplifyAppArn'
-  
+      Name: !Sub ${AWS::StackName}-AmplifyAppArn
+
   AmplifyDefaultDomain:
     Description: Amplify App Default Domain URL (add this to Q Business allowed websites)
-    Value: !Sub 'https://${GitHubBranch}.${AmplifyApp.AppId}.amplifyapp.com'
+    Value: !Sub https://${GitHubBranch}.${AmplifyApp.AppId}.amplifyapp.com
     Condition: HasGitHubRepo
     Export:
-      Name: !Sub '${AWS::StackName}-AmplifyDomain'
-  
+      Name: !Sub ${AWS::StackName}-AmplifyDomain
+
   WAFWebACLArn:
     Description: WAF WebACL ARN for Amplify association
     Value: !GetAtt AmplifyWebACL.Arn
     Export:
-      Name: !Sub '${AWS::StackName}-WAFWebACLArn'
-  
-  NextSteps:
-    Description: Instructions for completing the deployment
-    Value: |
-      1. Upload theme assets to the S3 bucket using the provided script
-      2. Follow AMPLIFY-SETUP.md to deploy the web application
-      3. Use the AmplifyComputeRoleArn output for the Amplify IAM role
-      4. Add your Amplify domain to Q Business allowed URLs
-      5. Associate the WAF WebACL with your Amplify app in the console
+      Name: !Sub ${AWS::StackName}-WAFWebACLArn

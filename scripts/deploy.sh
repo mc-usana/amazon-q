@@ -5,7 +5,7 @@ clear
 echo ""
 echo "🏛️  AMAZON Q BUSINESS DEPLOYMENT"
 echo ""
-echo "⏱️  Estimated deployment time: ~10 minutes"
+echo "⏱️  Estimated deployment time: ~4 minutes"
 echo ""
 
 # Configuration
@@ -70,6 +70,20 @@ echo ""
 echo "Uploading custom theme assets..."
 ./scripts/upload-theme-assets.sh "$STACK_NAME"
 echo "✅ Theme assets uploaded successfully"
+echo ""
+
+echo ""
+echo "─ AMPLIFY DEPLOYMENT ─────────────────────────────────────────────────────────"
+echo ""
+if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
+    echo "Committing changes to trigger Amplify build..."
+    git add -A
+    git commit -m "Update infrastructure configuration" || echo "No changes to commit"
+    git push origin "$GITHUB_BRANCH"
+    echo "✅ Changes pushed to trigger Amplify deployment"
+else
+    echo "⚠️  No GitHub integration - Amplify deployment requires manual setup"
+fi
 echo ""
 
 echo ""
