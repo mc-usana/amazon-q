@@ -295,6 +295,7 @@ Resources:
       Description: Q Business Anonymous Web Experience with Custom Theming
       Platform: WEB_COMPUTE
       IAMServiceRole: !GetAtt AmplifyServiceRole.Arn
+      ComputeRoleArn: !GetAtt AmplifyComputeRole.Arn
       Repository: !If
         - HasGitHubRepo
         - !Ref GitHubRepository
@@ -333,6 +334,8 @@ Resources:
       EnvironmentVariables:
         - Name: SECRET_NAME
           Value: !Ref QBusinessConfigSecret
+        - Name: REGION
+          Value: !Ref AWS::Region
         - Name: SESSION_DURATION_MINUTES
           Value: !Ref SessionDurationMinutes
       Tags:
