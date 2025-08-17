@@ -3,7 +3,7 @@
 *Themeable Embedded Web Experiences for Public Sector Use Cases*
 
 [![License](https://img.shields.io/badge/License-MIT--0-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 [![AWS Amplify](https://img.shields.io/badge/AWS-Amplify-orange.svg)](https://aws.amazon.com/amplify/)
 
 ## Introduction
