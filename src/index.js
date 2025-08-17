@@ -134,8 +134,56 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             function initializeApp() {
               // Set iframe source safely
               const iframe = document.getElementById('qbusiness-iframe');
+              console.log('🔍 Favicon Debug: iframe element found:', !!iframe);
+              console.log('🔍 Favicon Debug: anonymousUrl:', window.appConfig.anonymousUrl);
+              
               if (iframe && window.appConfig.anonymousUrl) {
                 iframe.src = window.appConfig.anonymousUrl;
+                console.log('🔍 Favicon Debug: iframe src set, waiting for load...');
+                
+                // Extract favicon from iframe when it loads
+                iframe.onload = function() {
+                  console.log('🔍 Favicon Debug: iframe loaded successfully');
+                  try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    console.log('🔍 Favicon Debug: iframe document accessed:', !!iframeDoc);
+                    
+                    if (iframeDoc) {
+                      const faviconLink = iframeDoc.querySelector('link[rel*="icon"]');
+                      console.log('🔍 Favicon Debug: favicon link found:', !!faviconLink);
+                      console.log('🔍 Favicon Debug: favicon href:', faviconLink?.href);
+                      
+                      if (faviconLink) {
+                        // Create or update parent page favicon
+                        let parentFavicon = document.querySelector('link[rel*="icon"]');
+                        console.log('🔍 Favicon Debug: existing parent favicon:', !!parentFavicon);
+                        
+                        if (!parentFavicon) {
+                          parentFavicon = document.createElement('link');
+                          parentFavicon.rel = 'icon';
+                          document.head.appendChild(parentFavicon);
+                          console.log('🔍 Favicon Debug: created new parent favicon');
+                        }
+                        
+                        parentFavicon.href = faviconLink.href;
+                        console.log('✅ Favicon Debug: parent favicon updated to:', parentFavicon.href);
+                      } else {
+                        console.log('❌ Favicon Debug: no favicon found in iframe');
+                      }
+                    }
+                  } catch (e) {
+                    // Cross-origin access blocked - expected for different domains
+                    console.log('❌ Favicon Debug: Cross-origin error:', e.message);
+                    console.log('🔍 Favicon Debug: This is expected if Q Business is on a different domain');
+                  }
+                };
+                
+                // Add error handler
+                iframe.onerror = function() {
+                  console.log('❌ Favicon Debug: iframe failed to load');
+                };
+              } else {
+                console.log('❌ Favicon Debug: Missing iframe or anonymousUrl');
               }
               
               // Start timer
