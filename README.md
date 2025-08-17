@@ -37,7 +37,7 @@ npm install
 
 **Step 3: Deploy the infrastructure.**
 
-Deployment takes approximately 5-10 minutes.
+Deployment takes approximately 5-10 minutes
 
 ```bash
 ./scripts/deploy.sh [stack-name] [branch] [github-repo] [github-token] [theme-dir]
