@@ -109,11 +109,22 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             };
             
             let remainingSeconds = window.appConfig.sessionDuration * 60;
+            let lastUpdateTime = Date.now();
             
             function updateTimer() {
-              const minutes = Math.floor(remainingSeconds / 60);
+              // Handle background tab throttling
+              const now = Date.now();
+              const timeDiff = Math.floor((now - lastUpdateTime) / 1000);
+              
+              if (timeDiff > 1) {
+                // Adjust for time lost while tab was in background
+                remainingSeconds -= (timeDiff - 1);
+              }
+              lastUpdateTime = now;
+              
+              const totalMinutes = Math.floor(remainingSeconds / 60);
               const seconds = remainingSeconds % 60;
-              const display = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+              const display = totalMinutes + ':' + (seconds < 10 ? '0' : '') + seconds;
               
               const durationElement = document.getElementById('session-duration');
               const timerElement = document.getElementById('timer');
@@ -130,6 +141,15 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                 }
               }
             }
+            
+            // Handle tab visibility changes
+            document.addEventListener('visibilitychange', function() {
+              if (!document.hidden) {
+                // Tab became visible, update immediately
+                lastUpdateTime = Date.now();
+                updateTimer();
+              }
+            });
             
             function initializeApp() {
               // Set iframe source safely

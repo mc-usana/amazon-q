@@ -79,16 +79,22 @@ Each theme's `theme.css` file contains CSS variables for customization:
 
 ```css
 :root {
-  /* Core Q Business variables */
-  --background: #FCFCFD;
-  --qbusiness-webexperience-title-color: #36454F;
+  /* Core styling */
+  --background: #FFFFFF;
+  --qbusiness-webexperience-title-color: #232F3E;
   --qbusiness-webexperience-font-typeface: 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   
   /* Chat styling */
-  --qbusiness-webexperience-chat-user-background-color: #e1f3ff;
-  --qbusiness-webexperience-chat-user-text-color: #0f3460;
-  --qbusiness-webexperience-chat-agent-background-color: #f5f0e8;
+  --qbusiness-webexperience-chat-user-background-color: #D6EAF8;
+  --qbusiness-webexperience-chat-user-text-color: #1B4F72;
+  --qbusiness-webexperience-chat-agent-background-color: #F8F9FA;
   --qbusiness-webexperience-chat-agent-text-color: #212529;
+  --qbusiness-webexperience-chat-logo-visibility: visible;
+  
+  /* Asset URLs */
+  --qbusiness-webexperience-logo-url: url('./logo.png');
+  --qbusiness-webexperience-font-url: url('./fonts/AmazonEmber_Bd.ttf');
+  --qbusiness-webexperience-favicon-url: url('./favicon.ico');
 }
 ```
 
