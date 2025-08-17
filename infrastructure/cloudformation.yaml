@@ -130,6 +130,10 @@ Resources:
   AccessLogsBucket:
     Type: AWS::S3::Bucket
     Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: "Access logging not required for access logs bucket - would create circular logging"
       checkov:
         skip:
           - id: CKV_AWS_18
