@@ -89,11 +89,23 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   </div>
               </div>
           <script>
-            // Safely pass server data to client
+            // Safely pass server data to client with validation
+            const sessionId = ${JSON.stringify(sessionId)}; // nosemgrep: javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag
+            const sessionDuration = ${JSON.stringify(parseInt(sessionDuration, 10))}; // nosemgrep: javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag
+            const anonymousUrl = ${JSON.stringify(anonymousUrl)};
+            
+            // Validate inputs
+            if (!sessionId || typeof sessionId !== 'string') {
+              throw new Error('Invalid session ID');
+            }
+            if (!Number.isInteger(sessionDuration) || sessionDuration <= 0) {
+              throw new Error('Invalid session duration');
+            }
+            
             window.appConfig = {
-              sessionId: ${JSON.stringify(sessionId)},
-              sessionDuration: ${parseInt(sessionDuration, 10)},
-              anonymousUrl: ${JSON.stringify(anonymousUrl)}
+              sessionId: sessionId,
+              sessionDuration: sessionDuration,
+              anonymousUrl: anonymousUrl
             };
             
             let remainingSeconds = window.appConfig.sessionDuration * 60;

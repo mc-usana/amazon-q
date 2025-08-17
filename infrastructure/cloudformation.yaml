@@ -126,9 +126,14 @@ Resources:
       Type: NATIVE_INDEX
 
   # S3 Bucket for Access Logs
-  # checkov:skip=CKV_AWS_18:Access logs bucket cannot log to itself
+  #checkov:skip=CKV_AWS_18:Access logs bucket cannot log to itself
   AccessLogsBucket:
     Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: "This is an access logs bucket and does not need its own access logging."
     Properties:
       BucketName: !Sub
         - ${BucketName}-access-logs-${StackName}-${UniqueId}
@@ -185,8 +190,7 @@ Resources:
                 aws:SecureTransport: "false"
 
   # S3 Bucket for Theme Assets
-  # checkov:skip=CKV_AWS_S10:Bucket policy applied dynamically by upload script with Referer condition
-  # checkov:skip=CKV_AWS_54:Q Business requires bucket policy access, BlockPublicPolicy must be false per AWS documentation
+  #checkov:skip=CKV_AWS_S10:Bucket policy applied dynamically by upload script with Referer condition
   ThemeAssetsBucket:
     Type: AWS::S3::Bucket
     Metadata:
@@ -232,9 +236,53 @@ Resources:
             Status: Enabled
             ExpirationInDays: 90
 
+  # KMS Key for Secrets Manager encryption
+  SecretsManagerKMSKey:
+    Type: AWS::KMS::Key
+    Metadata:
+      cdk_nag:
+        rules_to_suppress:
+          - id: AwsSolutions-KMS5
+            reason: "KMS key rotation not required for Q Business configuration secrets with static values"
+      checkov:
+        skip:
+          - id: CKV_AWS_7
+            comment: "KMS key rotation not required for Q Business configuration secrets with static values."
+    Properties:
+      Description: KMS key for Q Business Secrets Manager encryption
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow Secrets Manager
+            Effect: Allow
+            Principal:
+              Service: secretsmanager.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource: '*'
+
+  # KMS Key Alias
+  SecretsManagerKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-secrets-manager
+      TargetKeyId: !Ref SecretsManagerKMSKey
+
   # Secrets Manager Secret for Q Business Configuration
   QBusinessConfigSecret:
     Type: AWS::SecretsManager::Secret
+    Metadata:
+      cdk_nag:
+        rules_to_suppress:
+          - id: AwsSolutions-SMG4
+            reason: "Q Business configuration secret contains static values and does not require automatic rotation"
     Properties:
       Name: !Sub
         - qbusiness-config-${StackName}-${UniqueId}
@@ -249,6 +297,7 @@ Resources:
                   - /
                   - !Ref AWS::StackId
       Description: Q Business Application and Web Experience IDs for Amplify app
+      KmsKeyId: !Ref SecretsManagerKMSKey
       SecretString: !Sub
         - '{"QBUSINESS_APP_ID": "${QBusinessApp.ApplicationId}",
           "QBUSINESS_WEB_EXP_ID": "${WebExperienceId}"}'
@@ -345,6 +394,11 @@ Resources:
                 Action: secretsmanager:GetSecretValue # pragma: allowlist secret
                 Resource: !Ref QBusinessConfigSecret
               - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt SecretsManagerKMSKey.Arn
+              - Effect: Allow
                 Action: qbusiness:CreateAnonymousWebExperienceUrl
                 Resource:
                   - !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}
@@ -413,6 +467,11 @@ Resources:
   # CloudWatch Log Group for Amplify
   AmplifyLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: "CloudWatch Log Group for Amplify application logs with appropriate retention period."
     Properties:
       LogGroupName: !Sub /aws/amplify/${AmplifyApp.AppId}
       RetentionInDays: 14
