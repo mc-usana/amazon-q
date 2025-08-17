@@ -58,7 +58,7 @@ fi
 aws cloudformation deploy \
   --template-file infrastructure/cloudformation.yaml \
   --stack-name "$STACK_NAME" \
-  --parameter-overrides $PARAMS \
+  --parameter-overrides "$PARAMS" \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
   --region "$AWS_REGION" \
   --no-cli-pager

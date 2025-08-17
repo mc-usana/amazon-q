@@ -90,8 +90,8 @@ app.get('/', noCacheMiddleware, async (req, res) => {
               </div>
           <script>
             // Safely pass server data to client with validation
-            const sessionId = ${JSON.stringify(sessionId)}; // nosemgrep: javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag
-            const sessionDuration = ${JSON.stringify(parseInt(sessionDuration, 10))}; // nosemgrep: javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag
+            const sessionId = ${JSON.stringify(sessionId)}; // ok:unknown-value-with-script-tag
+            const sessionDuration = ${JSON.stringify(parseInt(sessionDuration, 10))}; // ok:unknown-value-with-script-tag
             const anonymousUrl = ${JSON.stringify(anonymousUrl)};
             
             // Validate inputs

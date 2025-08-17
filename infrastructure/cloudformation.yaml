@@ -194,6 +194,12 @@ Resources:
   ThemeAssetsBucket:
     Type: AWS::S3::Bucket
     Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: "Access logging not required for theme assets bucket - contains only public CSS/images"
+          - id: W51
+            reason: "Bucket policy applied dynamically by upload script with SSL enforcement and Referer conditions"
       cdk_nag:
         rules_to_suppress:
           - id: AwsSolutions-S2
@@ -240,6 +246,10 @@ Resources:
   SecretsManagerKMSKey:
     Type: AWS::KMS::Key
     Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F19
+            reason: "KMS key rotation not required for Q Business configuration secrets with static values"
       cdk_nag:
         rules_to_suppress:
           - id: AwsSolutions-KMS5
@@ -332,7 +342,6 @@ Resources:
           - id: AwsSolutions-IAM5
             reason: "Wildcard permissions required for Amplify log group access pattern"
     Properties:
-      RoleName: !Sub ${AWS::StackName}-AmplifyServiceRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -362,7 +371,6 @@ Resources:
           - id: AwsSolutions-IAM5
             reason: "Wildcard permissions required for Amplify log management and dynamic log streams"
     Properties:
-      RoleName: !Sub ${AWS::StackName}-AmplifyComputeRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -413,6 +421,11 @@ Resources:
   # Amplify Application
   AmplifyApp:
     Type: AWS::Amplify::App
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F41
+            reason: "GitHub AccessToken parameter follows AWS Amplify CloudFormation best practices per https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#setting-up-github-app-cloudformation"
     DependsOn:
       - QBusinessConfigSecret
     Properties:
@@ -468,6 +481,10 @@ Resources:
   AmplifyLogGroup:
     Type: AWS::Logs::LogGroup
     Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W84
+            reason: "KMS encryption not required for Amplify application logs with 14-day retention"
       checkov:
         skip:
           - id: CKV_AWS_158
