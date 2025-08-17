@@ -1,4 +1,6 @@
-# Amazon Q Business Customized Web Application
+# Amazon Q Business Anonymous Web Experience with AWS Amplify
+
+## Themeable Embedded Experience for Public Sector Use Cases
 
 [![License](https://img.shields.io/badge/License-MIT--0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
@@ -6,9 +8,9 @@
 
 ## Introduction
 
-This scalable solution provides a customized Amazon Q Business web application designed to help public sector agencies securely accelerate their adoption of Generative AI.
+This scalable solution provides a customized Amazon Q Business web application designed to help public sector agencies securely accelerate their adoption of Generative AI. Built with AWS Amplify Compute, it enables server-side rendering for dynamic anonymous session generation while providing zero-infrastructure management and automatic CI/CD deployment from GitHub.
 
-The application features **custom theming** for organizational branding and **automatic session management** that creates new **[anonymous chat sessions](https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/using-web-experience.html#web-experience-anonymous)** for each user visit.
+The application features **[custom theming](docs/CUSTOMIZATION.md)** for organizational branding and **automatic session management** that creates new **[anonymous chat sessions](https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/using-web-experience.html#web-experience-anonymous)** for each user visit.
 
 By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.aws.amazon.com/amazonq/latest/api-reference/API_CreateAnonymousWebExperienceUrl.html), the solution provides secure, temporary access without requiring user authentication.  
 
@@ -38,7 +40,7 @@ npm install
 Deployment takes approximately 5-10 minutes.
 
 ```bash
-./scripts/deploy.sh [stack-name] [branch] [github-repo] [github-token]
+./scripts/deploy.sh [stack-name] [branch] [github-repo] [github-token] [theme-dir]
 ```
 
 **Parameters:**
@@ -46,6 +48,12 @@ Deployment takes approximately 5-10 minutes.
 - `branch` (optional): Git branch name (default: "main") 
 - `github-repo` (optional): Your **forked** GitHub repository URL (e.g., "https://github.com/username/repo")
 - `github-token` (optional): GitHub personal access token ([create one here](https://github.com/settings/personal-access-tokens)) for automatic deployment
+- `theme-dir` (optional): Theme directory name from `assets/themes/` (default: "public-sector")
+
+**Example with custom theme:**
+```bash
+./scripts/deploy.sh my-stack main "https://github.com/myusername/my-forked-repo" "ghp_xxxxxxxxxxxx" "healthcare"
+```
 
 **Example with GitHub integration:**
 ```bash

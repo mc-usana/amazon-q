@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Theme Tester for Amazon Q Business Web Experience</title>
+    <link id="favicon" rel="icon" href="">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .panel { background: white; border-radius: 8px; padding: 20px; }
+        .theme-selector { grid-column: 1 / -1; margin-bottom: 0; }
+        .controls { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+        .variable-group { margin-bottom: 20px; }
+        .variable-group h4 { margin: 0 0 10px 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        .variable-input { display: flex; align-items: center; margin-bottom: 8px; }
+        .variable-input label { width: 200px; font-size: 12px; font-weight: bold; }
+        .variable-input input { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        .color-input { width: 60px !important; height: 30px; padding: 2px; }
+        .preview-container { background: var(--background, #FFFFFF); }
+        .chat-preview { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .user-message { background: var(--qbusiness-webexperience-chat-user-background-color, #e1f3ff); 
+                       color: var(--qbusiness-webexperience-chat-user-text-color, #0f3460); 
+                       padding: 10px; border-radius: 8px; margin: 5px 0; }
+        .agent-message { background: var(--qbusiness-webexperience-chat-agent-background-color, #f5f0e8); 
+                        color: var(--qbusiness-webexperience-chat-agent-text-color, #212529); 
+                        padding: 10px; border-radius: 8px; margin: 5px 0; }
+        .title-preview { color: var(--qbusiness-webexperience-title-color, #36454F); 
+                        font-family: var(--qbusiness-webexperience-font-typeface, Arial, sans-serif); 
+                        font-size: 24px; margin: 10px 0; }
+        .logo-preview { max-width: 200px; max-height: 50px; margin: 10px 0; 
+                       visibility: var(--qbusiness-webexperience-chat-logo-visibility, visible); }
+        .asset-showcase { margin: 15px 0; }
+        .font-demo { font-family: var(--qbusiness-webexperience-font-typeface, Arial, sans-serif); 
+                    font-size: 18px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; }
+        select, button { padding: 8px 16px; border-radius: 4px; border: 1px solid #ccc; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .accessibility-check { margin: 10px 0; padding: 10px; border-radius: 4px; font-size: 12px; }
+        .pass { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .fail { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .contrast-ratio { font-weight: bold; }
+        @media (max-width: 1200px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel theme-selector">
+            <h2>Demo Theme Tester for Amazon Q Business Web Experience</h2>
+            <div class="controls">
+                <label>Load Preset: 
+                    <select id="themeSelect">
+                        <option value="public-sector">Public Sector</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="financial">Financial</option>
+                    </select>
+                </label>
+                <button onclick="loadTheme()">Load</button>
+                <button onclick="resetToDefaults()">Reset</button>
+                <button onclick="exportCSS()">Export CSS</button>
+                <button onclick="copyCSS()">Copy CSS</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Theme Variables</h3>
+            
+            <div class="variable-group">
+                <h4>Colors</h4>
+                <div class="variable-input">
+                    <label>Background:</label>
+                    <input type="color" class="color-input" id="background" onchange="updateVariable('--background', this.value)">
+                    <input type="text" id="background-text" onchange="updateVariable('--background', this.value)" placeholder="#FFFFFF">
+                </div>
+                <div class="variable-input">
+                    <label>Title Color:</label>
+                    <input type="color" class="color-input" id="title-color" onchange="updateVariable('--qbusiness-webexperience-title-color', this.value)">
+                    <input type="text" id="title-color-text" onchange="updateVariable('--qbusiness-webexperience-title-color', this.value)">
+                </div>
+                <div class="variable-input">
+                    <label>User Message Background:</label>
+                    <input type="color" class="color-input" id="user-bg" onchange="updateVariable('--qbusiness-webexperience-chat-user-background-color', this.value)">
+                    <input type="text" id="user-bg-text" onchange="updateVariable('--qbusiness-webexperience-chat-user-background-color', this.value)">
+                </div>
+                <div class="variable-input">
+                    <label>User Message Text:</label>
+                    <input type="color" class="color-input" id="user-text" onchange="updateVariable('--qbusiness-webexperience-chat-user-text-color', this.value)">
+                    <input type="text" id="user-text-text" onchange="updateVariable('--qbusiness-webexperience-chat-user-text-color', this.value)">
+                </div>
+                <div class="variable-input">
+                    <label>Agent Message Background:</label>
+                    <input type="color" class="color-input" id="agent-bg" onchange="updateVariable('--qbusiness-webexperience-chat-agent-background-color', this.value)">
+                    <input type="text" id="agent-bg-text" onchange="updateVariable('--qbusiness-webexperience-chat-agent-background-color', this.value)">
+                </div>
+                <div class="variable-input">
+                    <label>Agent Message Text:</label>
+                    <input type="color" class="color-input" id="agent-text" onchange="updateVariable('--qbusiness-webexperience-chat-agent-text-color', this.value)">
+                    <input type="text" id="agent-text-text" onchange="updateVariable('--qbusiness-webexperience-chat-agent-text-color', this.value)">
+                </div>
+            </div>
+
+            <div class="variable-group">
+                <h4>Typography & Assets</h4>
+                <div class="variable-input">
+                    <label>Font Family:</label>
+                    <input type="text" id="font-family" onchange="updateVariable('--qbusiness-webexperience-font-typeface', this.value)" placeholder="Arial, sans-serif">
+                </div>
+                <div class="variable-input">
+                    <label>Logo Visibility:</label>
+                    <select id="logo-visibility" onchange="updateVariable('--qbusiness-webexperience-chat-logo-visibility', this.value)">
+                        <option value="visible">Visible</option>
+                        <option value="hidden">Hidden</option>
+                    </select>
+                </div>
+                <div class="variable-input">
+                    <label>Logo URL:</label>
+                    <input type="text" id="logo-url" onchange="updateVariable('--qbusiness-webexperience-logo-url', `url('${this.value}')`); updateAssetDisplay();" placeholder="./logo.png">
+                </div>
+                <div class="variable-input">
+                    <label>Font URL:</label>
+                    <input type="text" id="font-url" onchange="updateVariable('--qbusiness-webexperience-font-url', `url('${this.value}')`)" placeholder="./fonts/font.ttf">
+                </div>
+                <div class="variable-input">
+                    <label>Favicon URL:</label>
+                    <input type="text" id="favicon-url" onchange="updateVariable('--qbusiness-webexperience-favicon-url', `url('${this.value}')`); updateAssetDisplay();" placeholder="./favicon.ico">
+                </div>
+                <div class="variable-input">
+                    <label>Font Preview Text:</label>
+                    <input type="text" id="font-preview-text" onchange="updateFontPreview()" placeholder="How can we help you today?" value="How can we help you today? Ask questions about our services and policies.">
+                </div>
+            </div>
+
+            <div class="variable-group">
+                <h4>WCAG 2.1 Accessibility Check</h4>
+                <div id="accessibility-results"></div>
+            </div>
+        </div>
+
+        <div class="panel preview-container">
+            <h3>Live Preview</h3>
+            
+            <div class="title-preview">Government AI Assistant</div>
+            
+            <div class="asset-showcase">
+                <img id="logo-display" class="logo-preview" src="" alt="Theme Logo" style="display: none;">
+                <div class="font-demo" id="font-demo">How can we help you today? Ask questions about our services and policies.</div>
+            </div>
+
+            <div class="chat-preview">
+                <div class="user-message">What are the latest updates on infrastructure spending?</div>
+                <div class="agent-message">Based on the latest budget documents, infrastructure spending has increased by 15% this fiscal year, with major allocations for transportation and digital infrastructure projects.</div>
+                <div class="user-message">Can you provide more details about the digital infrastructure investments?</div>
+                <div class="agent-message">The digital infrastructure investments focus on three key areas: broadband expansion ($2.1B), cybersecurity improvements ($800M), and cloud modernization initiatives ($1.2B).</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const themes = {
+            'public-sector': {
+                '--background': '#FFFFFF',
+                '--qbusiness-webexperience-title-color': '#232F3E',
+                '--qbusiness-webexperience-font-typeface': 'Amazon Ember, Helvetica Neue, Arial, sans-serif',
+                '--qbusiness-webexperience-chat-user-background-color': '#D6EAF8',
+                '--qbusiness-webexperience-chat-user-text-color': '#1B4F72',
+                '--qbusiness-webexperience-chat-agent-background-color': '#F8F9FA',
+                '--qbusiness-webexperience-chat-agent-text-color': '#212529',
+                '--qbusiness-webexperience-chat-logo-visibility': 'visible',
+                '--qbusiness-webexperience-logo-url': "url('./logo.png')",
+                '--qbusiness-webexperience-font-url': "url('./fonts/AmazonEmber_Bd.ttf')",
+                '--qbusiness-webexperience-favicon-url': "url('./favicon.ico')"
+            },
+            'healthcare': {
+                '--background': '#FFFFFF',
+                '--qbusiness-webexperience-title-color': '#0D4F3C',
+                '--qbusiness-webexperience-font-typeface': 'Avenir, Segoe UI, Helvetica Neue, Arial, sans-serif',
+                '--qbusiness-webexperience-chat-user-background-color': '#D5F4E6',
+                '--qbusiness-webexperience-chat-user-text-color': '#0D4F3C',
+                '--qbusiness-webexperience-chat-agent-background-color': '#F8F9FA',
+                '--qbusiness-webexperience-chat-agent-text-color': '#212529',
+                '--qbusiness-webexperience-chat-logo-visibility': 'visible',
+                '--qbusiness-webexperience-logo-url': "url('./logo.png')",
+                '--qbusiness-webexperience-font-url': "url('./fonts/HealthcareFont.ttf')",
+                '--qbusiness-webexperience-favicon-url': "url('./favicon.ico')"
+            },
+            'financial': {
+                '--background': '#FFFFFF',
+                '--qbusiness-webexperience-title-color': '#1A365D',
+                '--qbusiness-webexperience-font-typeface': 'Georgia, Times New Roman, serif',
+                '--qbusiness-webexperience-chat-user-background-color': '#E6F3FF',
+                '--qbusiness-webexperience-chat-user-text-color': '#1A365D',
+                '--qbusiness-webexperience-chat-agent-background-color': '#F8F9FA',
+                '--qbusiness-webexperience-chat-agent-text-color': '#212529',
+                '--qbusiness-webexperience-chat-logo-visibility': 'visible',
+                '--qbusiness-webexperience-logo-url': "url('./logo.png')",
+                '--qbusiness-webexperience-font-url': "url('./fonts/FinancialFont.ttf')",
+                '--qbusiness-webexperience-favicon-url': "url('./favicon.ico')"
+            }
+        };
+
+        function updateVariable(variable, value) {
+            document.documentElement.style.setProperty(variable, value);
+            
+            // Update corresponding inputs
+            updateInputsFromCSS();
+            checkAccessibility();
+        }
+
+        function updateInputsFromCSS() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            // Update color inputs
+            const colorMappings = {
+                'background': '--background',
+                'title-color': '--qbusiness-webexperience-title-color',
+                'user-bg': '--qbusiness-webexperience-chat-user-background-color',
+                'user-text': '--qbusiness-webexperience-chat-user-text-color',
+                'agent-bg': '--qbusiness-webexperience-chat-agent-background-color',
+                'agent-text': '--qbusiness-webexperience-chat-agent-text-color'
+            };
+
+            Object.entries(colorMappings).forEach(([id, variable]) => {
+                const value = computedStyle.getPropertyValue(variable).trim();
+                if (value) {
+                    document.getElementById(id).value = value;
+                    document.getElementById(id + '-text').value = value;
+                }
+            });
+
+            // Update other inputs
+            document.getElementById('font-family').value = computedStyle.getPropertyValue('--qbusiness-webexperience-font-typeface').trim();
+            document.getElementById('logo-visibility').value = computedStyle.getPropertyValue('--qbusiness-webexperience-chat-logo-visibility').trim() || 'visible';
+            
+            const logoUrl = computedStyle.getPropertyValue('--qbusiness-webexperience-logo-url').trim();
+            document.getElementById('logo-url').value = logoUrl.replace(/url\(['"]?([^'"]*?)['"]?\)/g, '$1');
+            
+            const fontUrl = computedStyle.getPropertyValue('--qbusiness-webexperience-font-url').trim();
+            document.getElementById('font-url').value = fontUrl.replace(/url\(['"]?([^'"]*?)['"]?\)/g, '$1');
+            
+            const faviconUrl = computedStyle.getPropertyValue('--qbusiness-webexperience-favicon-url').trim();
+            document.getElementById('favicon-url').value = faviconUrl.replace(/url\(['"]?([^'"]*?)['"]?\)/g, '$1');
+
+            // Update asset display
+            updateAssetDisplay();
+        }
+
+        function updateAssetDisplay() {
+            const selectedTheme = document.getElementById('themeSelect').value;
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            // Update logo
+            const logoUrl = computedStyle.getPropertyValue('--qbusiness-webexperience-logo-url').trim();
+            const logoDisplay = document.getElementById('logo-display');
+            
+            if (logoUrl && logoUrl !== 'none') {
+                const cleanUrl = logoUrl.replace(/url\(['"]?([^'"]*?)['"]?\)/g, '$1');
+                const fullLogoUrl = `themes/${selectedTheme}/${cleanUrl.replace('./', '')}`;
+                logoDisplay.src = fullLogoUrl;
+                logoDisplay.style.display = 'block';
+                
+                // Handle image load error
+                logoDisplay.onerror = () => {
+                    logoDisplay.style.display = 'none';
+                    console.log('Logo not found:', fullLogoUrl);
+                };
+                
+                // Update logo visibility
+                const logoVisibility = computedStyle.getPropertyValue('--qbusiness-webexperience-chat-logo-visibility').trim();
+                if (logoVisibility === 'hidden') {
+                    logoDisplay.style.visibility = 'hidden';
+                } else {
+                    logoDisplay.style.visibility = 'visible';
+                }
+            } else {
+                logoDisplay.style.display = 'none';
+            }
+            
+            // Update favicon
+            const faviconUrl = computedStyle.getPropertyValue('--qbusiness-webexperience-favicon-url').trim();
+            
+            if (faviconUrl && faviconUrl !== 'none') {
+                const cleanFaviconUrl = faviconUrl.replace(/url\(['"]?([^'"]*?)['"]?\)/g, '$1');
+                const fullFaviconUrl = `themes/${selectedTheme}/${cleanFaviconUrl.replace('./', '')}`;
+                
+                // Force favicon refresh by adding timestamp
+                const timestampedUrl = `${fullFaviconUrl}?t=${Date.now()}`;
+                
+                // Remove existing favicon and add new one
+                const existingFavicon = document.querySelector('link[rel="icon"]');
+                if (existingFavicon) {
+                    existingFavicon.remove();
+                }
+                const newFavicon = document.createElement('link');
+                newFavicon.rel = 'icon';
+                newFavicon.href = timestampedUrl;
+                document.head.appendChild(newFavicon);
+            }
+        }
+
+        function updateFontPreview() {
+            const text = document.getElementById('font-preview-text').value;
+            document.getElementById('font-demo').textContent = text;
+        }
+
+        function loadTheme() {
+            const selectedTheme = document.getElementById('themeSelect').value;
+            const themeVars = themes[selectedTheme];
+            
+            Object.entries(themeVars).forEach(([variable, value]) => {
+                document.documentElement.style.setProperty(variable, value);
+            });
+            
+            updateInputsFromCSS();
+            checkAccessibility();
+        }
+
+        function resetToDefaults() {
+            // Clear all custom properties
+            const root = document.documentElement;
+            Object.keys(themes['public-sector']).forEach(variable => {
+                root.style.removeProperty(variable);
+            });
+            
+            // Load public sector theme
+            document.getElementById('themeSelect').value = 'public-sector';
+            loadTheme();
+        }
+
+        function exportCSS() {
+            const css = generateCSS();
+            const blob = new Blob([css], { type: 'text/css' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'custom-theme.css';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyCSS() {
+            const css = generateCSS();
+            navigator.clipboard.writeText(css).then(() => {
+                alert('CSS copied to clipboard!');
+            });
+        }
+
+        function generateCSS() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            const variables = Object.keys(themes['public-sector']);
+            const cssLines = [':root {'];
+            
+            variables.forEach(variable => {
+                const value = computedStyle.getPropertyValue(variable).trim();
+                if (value) {
+                    cssLines.push(`  ${variable}: ${value};`);
+                }
+            });
+            
+            cssLines.push('}');
+            return cssLines.join('\n');
+        }
+
+        // Accessibility checker functions
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function getLuminance(r, g, b) {
+            const [rs, gs, bs] = [r, g, b].map(c => {
+                c = c / 255;
+                return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+        }
+
+        function getContrastRatio(color1, color2) {
+            const rgb1 = hexToRgb(color1);
+            const rgb2 = hexToRgb(color2);
+            if (!rgb1 || !rgb2) return null;
+            
+            const lum1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
+            const lum2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
+            
+            const brightest = Math.max(lum1, lum2);
+            const darkest = Math.min(lum1, lum2);
+            
+            return (brightest + 0.05) / (darkest + 0.05);
+        }
+
+        function checkAccessibility() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            const userBg = computedStyle.getPropertyValue('--qbusiness-webexperience-chat-user-background-color').trim();
+            const userText = computedStyle.getPropertyValue('--qbusiness-webexperience-chat-user-text-color').trim();
+            const agentBg = computedStyle.getPropertyValue('--qbusiness-webexperience-chat-agent-background-color').trim();
+            const agentText = computedStyle.getPropertyValue('--qbusiness-webexperience-chat-agent-text-color').trim();
+            const titleColor = computedStyle.getPropertyValue('--qbusiness-webexperience-title-color').trim();
+            const background = computedStyle.getPropertyValue('--background').trim();
+
+            const checks = [
+                { name: 'User Message', bg: userBg, text: userText },
+                { name: 'Agent Message', bg: agentBg, text: agentText },
+                { name: 'Title', bg: background, text: titleColor }
+            ];
+
+            const results = checks.map(check => {
+                const ratio = getContrastRatio(check.bg, check.text);
+                const passAA = ratio >= 4.5;
+                const passAAA = ratio >= 7;
+                
+                return {
+                    name: check.name,
+                    ratio: ratio ? ratio.toFixed(2) : 'N/A',
+                    passAA,
+                    passAAA
+                };
+            });
+
+            const container = document.getElementById('accessibility-results');
+            container.innerHTML = results.map(result => `
+                <div class="accessibility-check ${result.passAA ? 'pass' : 'fail'}">
+                    <strong>${result.name}</strong> - Ratio: <span class="contrast-ratio">${result.ratio}:1</span><br>
+                    WCAG AA: ${result.passAA ? '✅ PASS' : '❌ FAIL'} | 
+                    WCAG AAA: ${result.passAAA ? '✅ PASS' : '❌ FAIL'}
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        loadTheme();
+    </script>
+</body>
+</html>

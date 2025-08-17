@@ -13,6 +13,7 @@ STACK_NAME=${1:-"qbusiness-public-sector"}
 GITHUB_BRANCH=${2:-"main"}
 GITHUB_REPO=${3:-""}
 GITHUB_TOKEN=${4:-""}
+THEME_DIR=${5:-"public-sector"}
 AWS_REGION=${AWS_REGION:-"us-east-1"}
 
 echo ""
@@ -20,6 +21,7 @@ echo "─ CONFIGURATION ──────────────────�
 echo ""
 echo "📦 Stack Name: $STACK_NAME"
 echo "🌿 Branch: $GITHUB_BRANCH"
+echo "🎨 Theme: $THEME_DIR"
 echo "🌍 Region: $AWS_REGION"
 echo ""
 
@@ -68,7 +70,7 @@ echo ""
 echo "─ THEME ASSETS ───────────────────────────────────────────────────────────────"
 echo ""
 echo "Uploading custom theme assets..."
-./scripts/upload-theme-assets.sh "$STACK_NAME"
+./scripts/upload-theme-assets.sh "$STACK_NAME" "$THEME_DIR"
 echo "✅ Theme assets uploaded successfully"
 echo ""
 

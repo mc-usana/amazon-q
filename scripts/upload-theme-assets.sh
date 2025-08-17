@@ -3,7 +3,16 @@ set -e
 
 # Upload theme assets to S3 bucket created by CloudFormation
 STACK_NAME=${1:-"qbusiness-public-sector"}
+THEME_DIR=${2:-"public-sector"}
 AWS_REGION=${AWS_REGION:-"us-east-1"}
+
+# Validate theme directory exists
+if [[ ! -d "assets/themes/$THEME_DIR" ]]; then
+  echo "❌ Theme directory 'assets/themes/$THEME_DIR' not found"
+  echo "Available themes:"
+  ls -1 assets/themes/ | sed 's/^/  - /'
+  exit 1
+fi
 
 # Get bucket name and web experience endpoint from CloudFormation stack outputs
 BUCKET_NAME=$(aws cloudformation describe-stacks \
@@ -65,11 +74,8 @@ if [[ -n "$DEVELOPER_ORIGINS" ]]; then
 fi
 
 # Upload theme assets quietly
-cd assets
-aws s3 cp public-sector-theme.css "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
-aws s3 cp aws-logo.png "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
-aws s3 cp AmazonEmber_Bd.ttf "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
-aws s3 cp favicon.ico "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
+cd "assets/themes/$THEME_DIR"
+aws s3 sync . "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
 
 # Get list of all uploaded files for dynamic policy generation
 UPLOADED_FILES=($(aws s3 ls "s3://$BUCKET_NAME/" --no-cli-pager | awk '{print $4}'))
@@ -152,7 +158,7 @@ AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
 aws qbusiness update-web-experience \
   --application-id "$QBUSINESS_APP_ID" \
   --web-experience-id "$QBUSINESS_WEB_EXP_ID" \
-  --customization-configuration "{\"customCSSUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/public-sector-theme.css\",\"logoUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/aws-logo.png\",\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/AmazonEmber_Bd.ttf\",\"faviconUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/favicon.ico\"}" \
+  --customization-configuration "{\"customCSSUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/theme.css\",\"logoUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/logo.png\",\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/fonts/AmazonEmber_Bd.ttf\",\"faviconUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/favicon.ico\"}" \
   --origins "[$AMPLIFY_ORIGINS]" \
   --region "$AWS_REGION" \
   --no-cli-pager >/dev/null 2>&1

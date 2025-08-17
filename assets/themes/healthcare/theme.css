@@ -1,0 +1,13 @@
+:root {
+  --background: #FFFFFF;
+  --qbusiness-webexperience-title-color: #0D4F3C;
+  --qbusiness-webexperience-font-typeface: 'Avenir', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --qbusiness-webexperience-chat-user-background-color: #D5F4E6;
+  --qbusiness-webexperience-chat-user-text-color: #0D4F3C;
+  --qbusiness-webexperience-chat-agent-background-color: #F8F9FA;
+  --qbusiness-webexperience-chat-agent-text-color: #212529;
+  --qbusiness-webexperience-chat-logo-visibility: visible;
+  --qbusiness-webexperience-logo-url: url('./logo.png');
+  --qbusiness-webexperience-font-url: url('./fonts/HealthcareFont.ttf');
+  --qbusiness-webexperience-favicon-url: url('./favicon.ico');
+}
