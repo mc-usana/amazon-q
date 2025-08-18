@@ -1,18 +1,48 @@
 #!/bin/bash
 set -e
 
-# Upload theme assets to S3 bucket created by CloudFormation
+clear
+echo ""
+echo "🎨  AMAZON Q BUSINESS THEME UPLOAD"
+echo ""
+echo "⏱️  Estimated upload time: ~1 minute"
+echo ""
+
+# Configuration
 STACK_NAME=${1:-"qbusiness-public-sector"}
 THEME_DIR=${2:-"public-sector"}
 AWS_REGION=${AWS_REGION:-"us-east-1"}
 
+echo ""
+echo "─ CONFIGURATION ──────────────────────────────────────────────────────────────"
+echo ""
+echo "📦 Stack Name: $STACK_NAME"
+echo "🎨 Theme: $THEME_DIR"
+echo "🌍 Region: $AWS_REGION"
+echo ""
+
+echo ""
+echo "─ VALIDATION ─────────────────────────────────────────────────────────────────"
+echo ""
+
 # Validate theme directory exists
 if [[ ! -d "assets/themes/$THEME_DIR" ]]; then
   echo "❌ Theme directory 'assets/themes/$THEME_DIR' not found"
+  echo ""
   echo "Available themes:"
-  ls -1 assets/themes/ | sed 's/^/  - /'
+  ls -1 assets/themes/ | sed 's/^/  • /'
+  echo ""
   exit 1
 fi
+
+echo "✅ Theme directory validated: $THEME_DIR"
+echo ""
+
+echo ""
+echo "─ INFRASTRUCTURE DISCOVERY ──────────────────────────────────────────────────"
+echo ""
+
+echo "🔍 Retrieving CloudFormation stack outputs..."
 
 # Get bucket name and web experience endpoint from CloudFormation stack outputs
 BUCKET_NAME=$(aws cloudformation describe-stacks \
@@ -73,6 +103,15 @@ if [[ -n "$DEVELOPER_ORIGINS" ]]; then
   done
 fi
 
+echo "✅ Infrastructure discovered successfully"
+echo ""
+
+echo ""
+echo "─ THEME UPLOAD ───────────────────────────────────────────────────────────────"
+echo ""
+
+echo "📤 Uploading theme assets to S3..."
+
 # Upload theme assets quietly
 cd "assets/themes/$THEME_DIR"
 aws s3 sync . "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
@@ -85,6 +124,15 @@ if [[ -z "$FONT_FILE" ]]; then
 else
   FONT_URL="\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/$FONT_FILE\","
 fi
+
+echo "✅ Theme assets uploaded successfully"
+echo ""
+
+echo ""
+echo "─ S3 BUCKET POLICY UPDATE ───────────────────────────────────────────────────"
+echo ""
+
+echo "🔒 Updating S3 bucket policy..."
 
 # Get list of all uploaded files for dynamic policy generation
 UPLOADED_FILES=($(aws s3 ls "s3://$BUCKET_NAME/" --no-cli-pager | awk '{print $4}'))
@@ -147,6 +195,15 @@ echo "$BUCKET_POLICY" | aws s3api put-bucket-policy \
   --region "$AWS_REGION" \
   --no-cli-pager >/dev/null 2>&1
 
+echo "✅ S3 bucket policy updated successfully"
+echo ""
+
+echo ""
+echo "─ WEB EXPERIENCE UPDATE ─────────────────────────────────────────────────────"
+echo ""
+
+echo "🔄 Updating Q Business web experience configuration..."
+
 # Get Q Business Application and Web Experience IDs
 QBUSINESS_APP_ID=$(aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" \
@@ -172,5 +229,19 @@ aws qbusiness update-web-experience \
   --region "$AWS_REGION" \
   --no-cli-pager >/dev/null 2>&1
 
-echo "✅ Theme assets uploaded, bucket policy updated, and Q Business web experience configured with Amplify domain"
+echo "✅ Web experience updated successfully"
+echo ""
 
+echo ""
+echo "─ UPLOAD SUMMARY ────────────────────────────────────────────────────────────"
+echo ""
+echo "🎨 Theme: $THEME_DIR"
+echo "📦 S3 Bucket: $BUCKET_NAME"
+echo "🌐 Web Experience: $WEB_EXPERIENCE_ENDPOINT"
+echo "🚀 Amplify Domain: $AMPLIFY_DOMAIN"
+echo ""
+echo "🎉 THEME UPLOAD COMPLETE!"
+echo ""
+echo "Your Q Business web experience has been updated with the new theme."
+echo "Changes should be visible immediately when you refresh the application."
+echo ""
