@@ -428,14 +428,43 @@
             });
 
             const container = document.getElementById('accessibility-results');
-            // nosemgrep: insecure-document-method
-            container.innerHTML = results.map(result => `
-                <div class="accessibility-check ${result.passAA ? 'pass' : 'fail'}">
-                    <strong>${result.name}</strong> - Ratio: <span class="contrast-ratio">${result.ratio}:1</span><br>
-                    WCAG AA: ${result.passAA ? '✅ PASS' : '❌ FAIL'} | 
-                    WCAG AAA: ${result.passAAA ? '✅ PASS' : '❌ FAIL'}
-                </div>
-            `).join('');
+            
+            // Clear existing content
+            container.innerHTML = '';
+            
+            // Create results using secure DOM manipulation
+            results.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `accessibility-check ${result.passAA ? 'pass' : 'fail'}`;
+                
+                const nameStrong = document.createElement('strong');
+                nameStrong.textContent = result.name;
+                
+                const ratioSpan = document.createElement('span');
+                ratioSpan.className = 'contrast-ratio';
+                ratioSpan.textContent = `${result.ratio}:1`;
+                
+                const br1 = document.createElement('br');
+                const br2 = document.createElement('br');
+                
+                const wcagAAText = document.createTextNode('WCAG AA: ');
+                const wcagAAResult = document.createTextNode(result.passAA ? '✅ PASS' : '❌ FAIL');
+                const separatorText = document.createTextNode(' | ');
+                const wcagAAAText = document.createTextNode('WCAG AAA: ');
+                const wcagAAAResult = document.createTextNode(result.passAAA ? '✅ PASS' : '❌ FAIL');
+                
+                resultDiv.appendChild(nameStrong);
+                resultDiv.appendChild(document.createTextNode(' - Ratio: '));
+                resultDiv.appendChild(ratioSpan);
+                resultDiv.appendChild(br1);
+                resultDiv.appendChild(wcagAAText);
+                resultDiv.appendChild(wcagAAResult);
+                resultDiv.appendChild(separatorText);
+                resultDiv.appendChild(wcagAAAText);
+                resultDiv.appendChild(wcagAAAResult);
+                
+                container.appendChild(resultDiv);
+            });
         }
 
         // Initialize
