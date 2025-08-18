@@ -160,7 +160,25 @@ QBUSINESS_CONFIG_ID=your-secrets-manager-secret-name
 After making customizations:
 
 1. **Local testing**: `npm start` (uses `config/.env`)
-2. **Theme asset upload**: Automatically handled by `scripts/upload-theme-assets.sh`
+2. **Theme asset upload**: Use `scripts/upload-theme-assets.sh` with parameters:
+   ```bash
+   ./scripts/upload-theme-assets.sh [stack-name] [theme-dir]
+   ```
+   **Parameters:**
+   - `stack-name` (optional): CloudFormation stack name (default: "qbusiness-public-sector")
+   - `theme-dir` (optional): Theme directory name from `assets/themes/` (default: "public-sector")
+   
+   **Examples:**
+   ```bash
+   # Use defaults
+   ./scripts/upload-theme-assets.sh
+   
+   # Custom stack and theme
+   ./scripts/upload-theme-assets.sh my-stack healthcare
+   
+   # Custom stack, default theme
+   ./scripts/upload-theme-assets.sh my-stack
+   ```
 3. **Deploy changes**: Push to your connected GitHub repository
 4. **Amplify auto-deploys**: Changes appear in 2-3 minutes
 

@@ -92,7 +92,6 @@ Resources:
               - qbusiness:Chat
               - qbusiness:ChatSync
               - qbusiness:PutFeedback
-              - qbusiness:GetWebExperience
               - qbusiness:GetApplication
               - qbusiness:GetChatControlsConfiguration
             Resource: !Sub arn:${AWS::Partition}:qbusiness:${AWS::Region}:${AWS::AccountId}:application/${QBusinessApp.ApplicationId}

@@ -77,6 +77,15 @@ fi
 cd "assets/themes/$THEME_DIR"
 aws s3 sync . "s3://$BUCKET_NAME/" --no-cli-pager >/dev/null 2>&1
 
+# Detect font file dynamically
+FONT_FILE=$(find . -name "*.ttf" -o -name "*.woff" -o -name "*.woff2" -o -name "*.otf" | head -1 | sed 's|^\./||')
+if [[ -z "$FONT_FILE" ]]; then
+  echo "⚠️  No font files found in theme directory"
+  FONT_URL=""
+else
+  FONT_URL="\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/$FONT_FILE\","
+fi
+
 # Get list of all uploaded files for dynamic policy generation
 UPLOADED_FILES=($(aws s3 ls "s3://$BUCKET_NAME/" --no-cli-pager | awk '{print $4}'))
 
@@ -158,7 +167,7 @@ AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
 aws qbusiness update-web-experience \
   --application-id "$QBUSINESS_APP_ID" \
   --web-experience-id "$QBUSINESS_WEB_EXP_ID" \
-  --customization-configuration "{\"customCSSUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/theme.css\",\"logoUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/logo.png\",\"fontUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/fonts/AmazonEmber_Bd.ttf\",\"faviconUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/favicon.ico\"}" \
+  --customization-configuration "{\"customCSSUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/theme.css\",\"logoUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/logo.png\",${FONT_URL}\"faviconUrl\":\"https://$BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/favicon.ico\"}" \
   --origins "[$AMPLIFY_ORIGINS]" \
   --region "$AWS_REGION" \
   --no-cli-pager >/dev/null 2>&1
