@@ -83,7 +83,7 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   <div class="status">
                       <div class="status-left">
                           <div class="status-dot"></div>
-                          <span id="timer">Session expires in <span id="session-duration">--</span>:00</span>
+                          <span id="timer">Session expires in <span id="session-duration">--:--</span></span>
                       </div>
                       <a href="javascript:location.reload()" class="btn">New Session</a>
                   </div>
@@ -122,9 +122,9 @@ app.get('/', noCacheMiddleware, async (req, res) => {
               }
               lastUpdateTime = now;
               
-              const totalMinutes = Math.floor(remainingSeconds / 60);
+              const minutes = Math.floor(remainingSeconds / 60);
               const seconds = remainingSeconds % 60;
-              const display = totalMinutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+              const display = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
               
               const durationElement = document.getElementById('session-duration');
               const timerElement = document.getElementById('timer');
