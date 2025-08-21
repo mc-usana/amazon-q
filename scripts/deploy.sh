@@ -30,9 +30,9 @@ echo "─ APPLICATION SETUP ─────────────────�
 echo ""
 # Get application name with validation
 while true; do
-    echo -n "Application name [GovernmentAIAssistant]: "
+    echo -n "Application name [GovAI]: "
     read APP_NAME
-    APP_NAME=${APP_NAME:-"GovernmentAIAssistant"}
+    APP_NAME=${APP_NAME:-"GovAI"}
     # Trim spaces
     APP_NAME=$(echo "$APP_NAME" | tr -d ' ')
     
