@@ -33,12 +33,14 @@ while true; do
     echo -n "Application name [GovernmentAIAssistant]: "
     read APP_NAME
     APP_NAME=${APP_NAME:-"GovernmentAIAssistant"}
+    # Trim spaces
+    APP_NAME=$(echo "$APP_NAME" | tr -d ' ')
     
     if [[ $APP_NAME =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]]; then
         echo "✅ Application name validated: $APP_NAME"
         break
     else
-        echo "❌ Invalid name. Use alphanumeric, hyphens, and underscores only."
+        echo "❌ Invalid name. Use alphanumeric, hyphens, and underscores only (no spaces)."
     fi
 done
 echo ""
@@ -49,16 +51,17 @@ echo ""
 echo "🚀 Deploying CloudFormation stack..."
 echo ""
 
-PARAMS="QBusinessApplicationName=$APP_NAME GitHubBranch=$GITHUB_BRANCH"
+# Build parameter overrides array
+PARAM_OVERRIDES=("QBusinessApplicationName=$APP_NAME" "GitHubBranch=$GITHUB_BRANCH")
 
 if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
-    PARAMS="$PARAMS GitHubRepository=$GITHUB_REPO GitHubAccessToken=$GITHUB_TOKEN"
+    PARAM_OVERRIDES+=("GitHubRepository=$GITHUB_REPO" "GitHubAccessToken=$GITHUB_TOKEN")
 fi
 
 aws cloudformation deploy \
   --template-file infrastructure/cloudformation.yaml \
   --stack-name "$STACK_NAME" \
-  --parameter-overrides "$PARAMS" \
+  --parameter-overrides "${PARAM_OVERRIDES[@]}" \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
   --region "$AWS_REGION" \
   --no-cli-pager
