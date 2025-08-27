@@ -152,7 +152,7 @@ Configure session settings in `config/.env`:
 
 ```env
 SESSION_DURATION_MINUTES=30  # 15-60 minutes
-QBUSINESS_CONFIG_ID=your-secrets-manager-secret-name
+QBUSINESS_CONFIG_ID=qbusiness-webexperience-config
 ```
 
 ## Deployment Process

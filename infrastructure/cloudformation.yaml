@@ -297,18 +297,7 @@ Resources:
           - id: AwsSolutions-SMG4
             reason: "Q Business configuration secret contains static values and does not require automatic rotation"
     Properties:
-      Name: !Sub
-        - qbusiness-config-${StackName}-${UniqueId}
-        - StackName: !Ref AWS::StackName
-          UniqueId: !Select
-            - 0
-            - !Split
-              - "-"
-              - !Select
-                - 2
-                - !Split
-                  - /
-                  - !Ref AWS::StackId
+      Name: qbusiness-webexperience-config
       Description: Q Business Application and Web Experience IDs for Amplify app
       KmsKeyId: !Ref SecretsManagerKMSKey
       SecretString: !Sub
@@ -579,18 +568,7 @@ Outputs:
 
   SecretsManagerSecretName:
     Description: Name of the Secrets Manager secret containing Q Business configuration
-    Value: !Sub
-      - qbusiness-config-${StackName}-${UniqueId}
-      - StackName: !Ref AWS::StackName
-        UniqueId: !Select
-          - 0
-          - !Split
-            - "-"
-            - !Select
-              - 2
-              - !Split
-                - /
-                - !Ref AWS::StackId
+    Value: qbusiness-webexperience-config
     Export:
       Name: !Sub ${AWS::StackName}-SecretName
 

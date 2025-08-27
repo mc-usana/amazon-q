@@ -81,11 +81,7 @@ echo ""
 echo "─ LOCAL DEVELOPMENT SETUP ────────────────────────────────────────────────────"
 echo ""
 echo "Creating local .env file for development..."
-QBUSINESS_CONFIG_ID=$(aws cloudformation describe-stacks \
-  --stack-name "$STACK_NAME" \
-  --region "$AWS_REGION" \
-  --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' \
-  --output text)
+QBUSINESS_CONFIG_ID="qbusiness-webexperience-config"
 
 cat > config/.env << EOF
 QBUSINESS_CONFIG_ID=$QBUSINESS_CONFIG_ID

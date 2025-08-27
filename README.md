@@ -101,7 +101,7 @@ Uploading custom theme assets...
 |  AmplifyComputeRoleArn    |  arn:aws:iam::123456789012:role/qbusiness-public-sector-AmplifyComputeRole  |
 |  QBusinessApplicationId   |  abcd1234-5678-90ef-ghij-klmnopqrstuv                                       |
 |  QBusinessWebExperienceId |  abcd1234-5678-90ef-ghij-klmnopqrstuv|wxyz5678-90ab-cdef-1234-567890abcdef  |
-|  SecretsManagerSecretName |  qbusiness-config-qbusiness-public-sector-13c6e240                          |
+|  SecretsManagerSecretName |  qbusiness-webexperience-config                                              |
 |  AmplifyDefaultDomain     |  https://main.d1a2b3c4d5e6f7.amplifyapp.com                                 |
 +---------------------------+-----------------------------------------------------------------------------+
 

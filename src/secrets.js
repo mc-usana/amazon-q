@@ -5,7 +5,7 @@ const client = new SecretsManagerClient({
 });
 
 export async function getQBusinessConfig() {
-  const secretName = process.env.QBUSINESS_CONFIG_ID || 'qbusiness-config';
+  const secretName = process.env.QBUSINESS_CONFIG_ID || 'qbusiness-webexperience-config';
   
   try {
     const command = new GetSecretValueCommand({ SecretId: secretName });

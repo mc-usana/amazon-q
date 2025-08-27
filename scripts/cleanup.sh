@@ -47,11 +47,7 @@ BUCKET_NAME=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`ThemeBucketName`].OutputValue' \
   --output text 2>/dev/null || echo "")
 
-QBUSINESS_CONFIG_ID=$(aws cloudformation describe-stacks \
-  --stack-name "$STACK_NAME" \
-  --region "$AWS_REGION" \
-  --query 'Stacks[0].Outputs[?OutputKey==`SecretsManagerSecretName`].OutputValue' \
-  --output text 2>/dev/null || echo "")
+QBUSINESS_CONFIG_ID="qbusiness-webexperience-config"
 
 if [ -n "$BUCKET_NAME" ]; then
     echo "✅ Found S3 bucket: $BUCKET_NAME"

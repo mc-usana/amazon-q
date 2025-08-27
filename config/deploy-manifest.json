@@ -28,7 +28,7 @@
       "runtime": "nodejs20.x",
       "entrypoint": "index.js",
       "environmentVariables": {
-        "QBUSINESS_CONFIG_ID": "${QBUSINESS_CONFIG_ID}",
+        "QBUSINESS_CONFIG_ID": "qbusiness-webexperience-config",
         "REGION": "${REGION}",
         "SESSION_DURATION_MINUTES": "${SESSION_DURATION_MINUTES}",
         "NODE_ENV": "production"
