@@ -52,12 +52,12 @@ Deployment takes approximately 5-10 minutes.
 
 **Example with custom theme:**
 ```bash
-./scripts/deploy.sh my-stack main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx" "healthcare"
+./scripts/deploy.sh qbusiness-public-sector main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx" "healthcare"
 ```
 
 **Example with GitHub integration:**
 ```bash
-./scripts/deploy.sh my-stack main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx"
+./scripts/deploy.sh qbusiness-public-sector main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx"
 ```
 
 **Example for local development only:**
@@ -171,7 +171,7 @@ To remove all AWS resources created by this solution:
 
 **Example:**
 ```bash
-./scripts/cleanup.sh my-stack
+./scripts/cleanup.sh
 ```
 
 The script will:
