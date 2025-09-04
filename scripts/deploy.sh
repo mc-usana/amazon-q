@@ -138,6 +138,12 @@ if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
                   --query 'Stacks[0].Outputs[?OutputKey==`AmplifyDefaultDomain`].OutputValue' \
                   --output text)
                 
+                if [[ -z "$AMPLIFY_DOMAIN" || "$AMPLIFY_DOMAIN" == "None" ]]; then
+                    echo "ℹ️  No Amplify deployment created (GitHub integration not configured)"
+                    echo "   Use 'npm start' for local development only"
+                    break
+                fi
+                
                 QBUSINESS_APP_ID=$(aws cloudformation describe-stacks \
                   --stack-name "$STACK_NAME" \
                   --region "$AWS_REGION" \
@@ -170,7 +176,8 @@ if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
         esac
     done
 else
-    echo "⚠️  No GitHub integration - Amplify deployment requires manual setup"
+    echo "ℹ️  No Amplify deployment created (GitHub integration not configured)"
+    echo "   Use 'npm start' for local development only"
 fi
 echo ""
 

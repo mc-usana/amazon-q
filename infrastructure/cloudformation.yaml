@@ -341,6 +341,9 @@ Resources:
             Principal:
               Service: amplify.amazonaws.com
             Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
       Policies:
         - PolicyName: CloudWatchLogsAccess
           PolicyDocument:
@@ -370,6 +373,9 @@ Resources:
             Principal:
               Service: amplify.amazonaws.com
             Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
 
       Policies:
         - PolicyName: AmplifyComputePolicy
@@ -472,18 +478,48 @@ Resources:
   # CloudWatch Log Group for Amplify
   AmplifyLogGroup:
     Type: AWS::Logs::LogGroup
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: W84
-            reason: "KMS encryption not required for Amplify application logs with 14-day retention"
-      checkov:
-        skip:
-          - id: CKV_AWS_158
-            comment: "CloudWatch Log Group for Amplify application logs with appropriate retention period."
+    DependsOn: 
+      - AmplifyLogGroupKMSKey
+      - AmplifyLogGroupKMSKeyAlias
     Properties:
       LogGroupName: !Sub /aws/amplify/${AmplifyApp.AppId}
       RetentionInDays: 14
+      KmsKeyId: !GetAtt AmplifyLogGroupKMSKey.Arn
+
+  # KMS Key for Amplify Log Group encryption
+  AmplifyLogGroupKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS Key for Amplify Log Group encryption
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: "*"
+          - Sid: Allow CloudWatch Logs
+            Effect: Allow
+            Principal:
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: "*"
+            Condition:
+              ArnEquals:
+                kms:EncryptionContext:aws:logs:arn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/amplify/${AmplifyApp.AppId}
+
+  AmplifyLogGroupKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-amplify-logs
+      TargetKeyId: !Ref AmplifyLogGroupKMSKey
 
   # AWS WAF WebACL for Amplify
   AmplifyWebACL:
@@ -527,6 +563,9 @@ Resources:
   # AWS WAF WebACL Association with Amplify
   AmplifyWAFAssociation:
     Type: AWS::WAFv2::WebACLAssociation
+    DependsOn: 
+      - AmplifyWebACL
+      - AmplifyApp
     Properties:
       ResourceArn: !GetAtt AmplifyApp.Arn
       WebACLArn: !GetAtt AmplifyWebACL.Arn

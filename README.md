@@ -26,16 +26,16 @@ By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.a
 
 ## Setup
 
-**Step 1: Fork this repository** to your GitHub account (don't just clone)
-
-**Step 2: Clone your fork** locally:
+**Step 1: Clone and push to your repository:**
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_FORKED_REPO.git
-cd YOUR_FORKED_REPO
+git clone https://github.com/aws-samples/secure-q-business-web-experiences.git
+cd secure-q-business-web-experiences
+git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_NEW_REPO.git
+git push -u origin main
 npm install
 ```
 
-**Step 3: Deploy the infrastructure.**
+**Step 2: Deploy the infrastructure.**
 
 Deployment takes approximately 5-10 minutes.
 
@@ -46,18 +46,18 @@ Deployment takes approximately 5-10 minutes.
 **Parameters:**
 - `stack-name` (optional): CloudFormation stack name (default: "qbusiness-public-sector")
 - `branch` (optional): Git branch name (default: "main") 
-- `github-repo` (optional): Your **forked** GitHub repository URL (e.g., "https://github.com/username/repo")
+- `github-repo` (optional): Your GitHub repository URL (e.g., "https://github.com/username/repo")
 - `github-token` (optional): GitHub personal access token ([create one here](https://github.com/settings/personal-access-tokens)) for automatic deployment
 - `theme-dir` (optional): Theme directory name from `assets/themes/` (default: "public-sector")
 
 **Example with custom theme:**
 ```bash
-./scripts/deploy.sh my-stack main "https://github.com/myusername/my-forked-repo" "ghp_xxxxxxxxxxxx" "healthcare"
+./scripts/deploy.sh my-stack main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx" "healthcare"
 ```
 
 **Example with GitHub integration:**
 ```bash
-./scripts/deploy.sh my-stack main "https://github.com/myusername/my-forked-repo" "ghp_xxxxxxxxxxxx"
+./scripts/deploy.sh my-stack main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx"
 ```
 
 **Example for local development only:**
