@@ -156,8 +156,27 @@ app.get('/', noCacheMiddleware, async (req, res) => {
               const iframe = document.getElementById('qbusiness-iframe');
               if (iframe && window.appConfig.anonymousUrl) {
                 // Ensure sandbox attributes are set before loading content (Safari requirement)
-                iframe.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts');
-                iframe.src = window.appConfig.anonymousUrl;
+                iframe.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation');
+                
+                // Request storage access for Safari ITP compatibility
+                if (document.hasStorageAccess) {
+                  document.hasStorageAccess().then(hasAccess => {
+                    if (!hasAccess) {
+                      // Request storage access to allow cookies in iframe
+                      document.requestStorageAccess().then(() => {
+                        iframe.src = window.appConfig.anonymousUrl;
+                      }).catch(() => {
+                        // Fallback: load anyway, might work without cookies
+                        iframe.src = window.appConfig.anonymousUrl;
+                      });
+                    } else {
+                      iframe.src = window.appConfig.anonymousUrl;
+                    }
+                  });
+                } else {
+                  // Browser doesn't support Storage Access API
+                  iframe.src = window.appConfig.anonymousUrl;
+                }
               }
               
               // Start timer
