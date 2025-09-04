@@ -152,29 +152,29 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             });
             
             function initializeApp() {
-              // Set iframe source safely
+              // Detect Safari
+              const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+              
               const iframe = document.getElementById('qbusiness-iframe');
               if (iframe && window.appConfig.anonymousUrl) {
-                // Ensure sandbox attributes are set before loading content (Safari requirement)
                 iframe.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation');
                 
-                // Request storage access for Safari ITP compatibility
-                if (document.hasStorageAccess) {
-                  document.hasStorageAccess().then(hasAccess => {
-                    if (!hasAccess) {
-                      // Request storage access to allow cookies in iframe
-                      document.requestStorageAccess().then(() => {
-                        iframe.src = window.appConfig.anonymousUrl;
-                      }).catch(() => {
-                        // Fallback: load anyway, might work without cookies
-                        iframe.src = window.appConfig.anonymousUrl;
-                      });
-                    } else {
-                      iframe.src = window.appConfig.anonymousUrl;
-                    }
-                  });
+                if (isSafari) {
+                  // For Safari, show a click-to-load button to trigger user interaction
+                  const container = iframe.parentElement;
+                  const loadButton = document.createElement('button');
+                  loadButton.textContent = 'Click to Load Chat (Safari)';
+                  loadButton.style.cssText = 'padding: 20px; font-size: 16px; background: #007dbc; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 20px;';
+                  
+                  loadButton.onclick = function() {
+                    // User interaction allows Safari to load the iframe properly
+                    iframe.src = window.appConfig.anonymousUrl;
+                    loadButton.remove();
+                  };
+                  
+                  container.insertBefore(loadButton, iframe);
                 } else {
-                  // Browser doesn't support Storage Access API
+                  // Non-Safari browsers load immediately
                   iframe.src = window.appConfig.anonymousUrl;
                 }
               }
