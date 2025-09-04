@@ -152,31 +152,19 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             });
             
             function initializeApp() {
-              // Detect Safari
-              const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-              
               const iframe = document.getElementById('qbusiness-iframe');
               if (iframe && window.appConfig.anonymousUrl) {
-                iframe.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation');
+                // Wait for iframe to be ready, then load content
+                iframe.onload = function() {
+                  console.log('Q Business iframe loaded successfully');
+                };
                 
-                if (isSafari) {
-                  // For Safari, show a click-to-load button to trigger user interaction
-                  const container = iframe.parentElement;
-                  const loadButton = document.createElement('button');
-                  loadButton.textContent = 'Click to Load Chat (Safari)';
-                  loadButton.style.cssText = 'padding: 20px; font-size: 16px; background: #007dbc; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 20px;';
-                  
-                  loadButton.onclick = function() {
-                    // User interaction allows Safari to load the iframe properly
-                    iframe.src = window.appConfig.anonymousUrl;
-                    loadButton.remove();
-                  };
-                  
-                  container.insertBefore(loadButton, iframe);
-                } else {
-                  // Non-Safari browsers load immediately
-                  iframe.src = window.appConfig.anonymousUrl;
-                }
+                iframe.onerror = function() {
+                  console.error('Failed to load Q Business iframe');
+                };
+                
+                // Load the Q Business URL
+                iframe.src = window.appConfig.anonymousUrl;
               }
               
               // Start timer
@@ -196,7 +184,7 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                     id="qbusiness-iframe" 
                     src="about:blank"
                     allow="microphone; camera; clipboard-read; clipboard-write"
-                    sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
+                    credentialless
                     referrerpolicy="strict-origin-when-cross-origin">
                   </iframe>
               </div>
