@@ -59,11 +59,6 @@ Deployment takes approximately 5-10 minutes.
 ```bash
 ./scripts/deploy.sh qbusiness-public-sector main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx"
 ```
-
-**Example for local development only:**
-```bash
-./scripts/deploy.sh
-```
 *Note: Without GitHub integration, this creates Q Business infrastructure and local .env file for development, but no Amplify deployment.*
 
 The script will guide you through setup:
@@ -116,6 +111,13 @@ NEXT STEPS:
 
 **Step 3: Test locally (optional).**
 
+For local development only (without GitHub integration):
+```bash
+./scripts/deploy.sh
+npm install && npm start
+```
+
+For full deployment testing:
 ```bash
 npm install && npm start
 ```
