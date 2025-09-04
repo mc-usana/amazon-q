@@ -154,6 +154,27 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             function initializeApp() {
               const iframe = document.getElementById('qbusiness-iframe');
               if (iframe && window.appConfig.anonymousUrl) {
+                // Detect Safari
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                
+                if (isSafari) {
+                  // Add Safari-specific notice
+                  const container = iframe.parentElement;
+                  const notice = document.createElement('div');
+                  notice.innerHTML = \`
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                      <strong>Safari Users:</strong> If the chat doesn't load, please:
+                      <ol style="margin: 10px 0;">
+                        <li>Go to Safari → Preferences → Privacy</li>
+                        <li>Uncheck "Prevent cross-site tracking"</li>
+                        <li>Refresh this page</li>
+                      </ol>
+                      <small>This is required for embedded chat functionality in Safari.</small>
+                    </div>
+                  \`;
+                  container.insertBefore(notice, iframe);
+                }
+                
                 // Wait for iframe to be ready, then load content
                 iframe.onload = function() {
                   console.log('Q Business iframe loaded successfully');
