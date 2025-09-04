@@ -155,6 +155,8 @@ app.get('/', noCacheMiddleware, async (req, res) => {
               // Set iframe source safely
               const iframe = document.getElementById('qbusiness-iframe');
               if (iframe && window.appConfig.anonymousUrl) {
+                // Ensure sandbox attributes are set before loading content (Safari requirement)
+                iframe.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts');
                 iframe.src = window.appConfig.anonymousUrl;
               }
               
@@ -174,8 +176,8 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                   <iframe 
                     id="qbusiness-iframe" 
                     src="about:blank"
-                    allow="camera; microphone; geolocation; encrypted-media; fullscreen"
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"
+                    allow="microphone; camera; clipboard-read; clipboard-write"
+                    sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
                     referrerpolicy="strict-origin-when-cross-origin">
                   </iframe>
               </div>
