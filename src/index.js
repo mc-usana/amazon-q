@@ -171,7 +171,13 @@ app.get('/', noCacheMiddleware, async (req, res) => {
             }
           </script> 
               <div class="iframe-container">
-                  <iframe id="qbusiness-iframe" src="about:blank"></iframe>
+                  <iframe 
+                    id="qbusiness-iframe" 
+                    src="about:blank"
+                    allow="camera; microphone; geolocation; encrypted-media; fullscreen"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"
+                    referrerpolicy="strict-origin-when-cross-origin">
+                  </iframe>
               </div>
               <div class="footer">
                   Coversation history is not available after session expiration.<br>
