@@ -1,5 +1,5 @@
 {
-  "name": "secure-web-experiences-for-amazon-q-business",
+  "name": "sample-secure-web-experiences-for-amazon-q-business",
   "version": "1.0.0",
   "description": "Secure Web Experiences for Amazon Q Business with AWS Amplify",
   "main": "index.js",
