@@ -1,4 +1,4 @@
-# Amazon Q Business Anonymous Web Experience with AWS Amplify
+# Secure Web Experiences for Amazon Q Business with AWS Amplify
 
 *Themeable Embedded Web Experiences for Public Sector Use Cases*
 
@@ -28,8 +28,8 @@ By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.a
 
 **Step 1: Clone and push to your repository:**
 ```bash
-git clone https://github.com/aws-samples/secure-q-business-web-experiences.git
-cd secure-q-business-web-experiences
+git clone https://github.com/aws-samples/secure-web-experiences-for-amazon-q-business.git
+cd secure-web-experiences-for-amazon-q-business
 git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_NEW_REPO.git
 git push -u origin main
 npm install

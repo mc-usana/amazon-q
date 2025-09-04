@@ -1,16 +1,16 @@
 {
-  "name": "express-amplify-app",
+  "name": "secure-web-experiences-for-amazon-q-business",
   "version": "1.0.0",
-  "description": "",
+  "description": "Secure Web Experiences for Amazon Q Business with AWS Amplify",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
     "build": "./scripts/build.sh",
     "serve": "node .amplify-hosting/compute/default/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["amazon-q-business", "aws-amplify", "public-sector", "generative-ai"],
+  "author": "AWS",
+  "license": "MIT-0",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
