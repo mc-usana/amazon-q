@@ -135,7 +135,7 @@ echo ""
 echo "🔒 Updating S3 bucket policy..."
 
 # Get list of all uploaded files for dynamic policy generation
-UPLOADED_FILES=($(aws s3 ls "s3://$BUCKET_NAME/" --no-cli-pager | awk '{print $4}'))
+UPLOADED_FILES=($(aws s3 ls "s3://$BUCKET_NAME/" --recursive --no-cli-pager | awk '{print $4}'))
 
 # Generate resource ARNs for all uploaded files
 RESOURCE_ARNS=""
@@ -216,6 +216,10 @@ QBUSINESS_WEB_EXP_ID=$(aws cloudformation describe-stacks \
   --region "$AWS_REGION" \
   --query 'Stacks[0].Outputs[?OutputKey==`QBusinessWebExperienceId`].OutputValue' \
   --output text | cut -d'|' -f2)
+
+# Update Q Business web experience with theme customization and add Amplify domain to origins
+CURRENT_ORIGINS=$(echo "$DEVELOPER_ORIGINS" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')
+AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
 
 # Update Q Business web experience with theme customization and add Amplify domain to origins
 CURRENT_ORIGINS=$(echo "$DEVELOPER_ORIGINS" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')
