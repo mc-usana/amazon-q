@@ -111,13 +111,6 @@ NEXT STEPS:
 
 **Step 3: Test locally (optional).**
 
-For local development only (without GitHub integration):
-```bash
-./scripts/deploy.sh
-npm install && npm start
-```
-
-For full deployment testing:
 ```bash
 npm install && npm start
 ```
@@ -125,6 +118,8 @@ npm install && npm start
 Visit `http://localhost:3000` to test locally.
 
 **Note**: Your Amplify app will auto-deploy when changes are committed to the main branch.
+
+**Production Security**: For production deployments, remove `http://localhost:3000` from the `DeveloperOrigins` parameter in your CloudFormation stack to prevent local development access.
 
 ## Reference Architecture
 
