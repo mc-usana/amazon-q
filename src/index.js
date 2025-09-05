@@ -158,14 +158,16 @@ app.get('/', noCacheMiddleware, async (req, res) => {
                 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
                 
                 if (isSafari) {
-                  // Add Safari-specific notice (only if not already shown)
+                  // Add Safari-specific notice (only if not already shown and not previously dismissed)
                   const container = iframe.parentElement;
-                  if (!document.getElementById('safari-notice')) {
+                  const wasDismissed = sessionStorage.getItem('safari-notice-dismissed');
+                  
+                  if (!document.getElementById('safari-notice') && !wasDismissed) {
                     const notice = document.createElement('div');
                     notice.id = 'safari-notice';
                     notice.innerHTML = \`
                       <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 10px 0; border-radius: 5px; position: relative;">
-                        <button onclick="this.parentElement.parentElement.style.display='none'" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 18px; cursor: pointer; color: #856404;">✕</button>
+                        <button onclick="this.parentElement.parentElement.style.display='none'; sessionStorage.setItem('safari-notice-dismissed', 'true');" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 18px; cursor: pointer; color: #856404;">✕</button>
                         <strong>Safari Users:</strong> If the chat doesn't load, please:
                         <ol style="margin: 10px 0;">
                           <li>Go to Safari → Settings → Privacy</li>
