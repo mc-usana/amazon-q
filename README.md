@@ -1,4 +1,4 @@
-# Sample: Secure Web Experiences for Amazon Q Business with AWS Amplify
+# Secure Web Experiences for Amazon Q Business with AWS Amplify
 
 *Themeable Embedded Web Experiences for Public Sector Use Cases*
 
