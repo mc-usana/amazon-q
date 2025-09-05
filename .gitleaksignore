@@ -1,5 +1,0 @@
-# Gitleaks ignore file for false positives
-# Fingerprint format: commit_hash:file_path:rule_type:line_number
-
-# False positive: drawio file contains base64 encoded diagram data, not real AWS token
-5e4e291c3532a9112a5e6ca47f481f5b3a4833c4:docs/images/q-business-customization-anatomy.drawio:aws-access-token:7
