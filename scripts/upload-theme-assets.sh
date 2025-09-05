@@ -80,14 +80,13 @@ if [[ -z "$WEB_EXPERIENCE_ENDPOINT" ]]; then
   exit 1
 fi
 
+# Amplify domain is optional (only exists if GitHub integration was configured)
 if [[ -z "$AMPLIFY_DOMAIN" ]]; then
-  echo "❌ Could not find AmplifyDefaultDomain in stack outputs"
-  exit 1
+  echo "⚠️  No Amplify domain found - skipping Amplify integration"
+  AMPLIFY_DOMAIN_CLEAN=""
+else
+  AMPLIFY_DOMAIN_CLEAN=$(echo "$AMPLIFY_DOMAIN" | sed 's|https://||' | sed 's|/$||')
 fi
-
-# Extract domains from endpoints (remove https:// and trailing /)
-WEB_EXPERIENCE_DOMAIN=$(echo "$WEB_EXPERIENCE_ENDPOINT" | sed 's|https://||' | sed 's|/$||')
-AMPLIFY_DOMAIN_CLEAN=$(echo "$AMPLIFY_DOMAIN" | sed 's|https://||' | sed 's|/$||')
 
 # Clean developer origins (remove https:// and trailing /)
 DEVELOPER_ORIGINS_CLEAN=""
@@ -176,7 +175,7 @@ BUCKET_POLICY=$(cat <<EOF
       "Resource": [$RESOURCE_ARNS],
       "Condition": {
         "StringLike": {
-          "aws:Referer": ["$WEB_EXPERIENCE_DOMAIN", "$AMPLIFY_DOMAIN_CLEAN"$(if [[ -n "$DEVELOPER_ORIGINS_CLEAN" ]]; then echo ", $DEVELOPER_ORIGINS_CLEAN"; fi)]
+          "aws:Referer": ["$WEB_EXPERIENCE_DOMAIN"$(if [[ -n "$AMPLIFY_DOMAIN_CLEAN" ]]; then echo ", \"$AMPLIFY_DOMAIN_CLEAN\""; fi)$(if [[ -n "$DEVELOPER_ORIGINS_CLEAN" ]]; then echo ", $DEVELOPER_ORIGINS_CLEAN"; fi)]
         },
         "Bool": {
           "aws:SecureTransport": "true"
@@ -218,12 +217,14 @@ QBUSINESS_WEB_EXP_ID=$(aws cloudformation describe-stacks \
   --output text | cut -d'|' -f2)
 
 # Update Q Business web experience with theme customization and add Amplify domain to origins
-CURRENT_ORIGINS=$(echo "$DEVELOPER_ORIGINS" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')
-AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
-
 # Update Q Business web experience with theme customization and add Amplify domain to origins
 CURRENT_ORIGINS=$(echo "$DEVELOPER_ORIGINS" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')
-AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
+
+if [[ -n "$AMPLIFY_DOMAIN" ]]; then
+  AMPLIFY_ORIGINS="\"$AMPLIFY_DOMAIN\",$CURRENT_ORIGINS"
+else
+  AMPLIFY_ORIGINS="$CURRENT_ORIGINS"
+fi
 
 aws qbusiness update-web-experience \
   --application-id "$QBUSINESS_APP_ID" \
