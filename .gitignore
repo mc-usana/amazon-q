@@ -1,53 +1,11 @@
-# Build artifacts
-.amplify-hosting/
-dist/
+# Dependencies
 node_modules/
 
 # Environment files
-.env.local
-.env.production
 config/.env
 
-# Amplify files (using CloudFormation BuildSpec instead)
-amplify.yml
-
-# Security review assets
-_aws_deliverable_security_review_assets/
-
 # Logs
-logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# OS generated files
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Temporary files
-*.tmp
-*.temp
-
-to_be_deleted
