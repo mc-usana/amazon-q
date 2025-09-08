@@ -20,5 +20,8 @@
     "@aws-sdk/client-secrets-manager": "3.864.0",
     "dotenv": "16.3.1",
     "express": "5.1.0"
+  },
+  "overrides": {
+    "debug": "4.3.7"
   }
 }
