@@ -47,7 +47,7 @@ Deployment takes approximately 5-10 minutes.
 - `stack-name` (optional): CloudFormation stack name (default: "qbusiness-public-sector")
 - `branch` (optional): Git branch name (default: "main") 
 - `github-repo` (optional): Your GitHub repository URL (e.g., "https://github.com/username/repo")
-- `github-token` (optional): GitHub personal access token ([create one here](https://github.com/settings/personal-access-tokens)) for automatic deployment
+- `github-token` (optional): GitHub personal access token with **admin:repo_hook** scope ([create one here](https://github.com/settings/personal-access-tokens)) for automatic deployment (or see [GitHub App setup with CloudFormation](https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#setting-up-github-app-cloudformation))
 - `theme-dir` (optional): Theme directory name from `assets/themes/` (default: "public-sector")
 
 **Example with custom theme:**
