@@ -14,7 +14,7 @@ GITHUB_BRANCH=${2:-"main"}
 GITHUB_REPO=${3:-""}
 GITHUB_TOKEN=${4:-""}
 THEME_DIR=${5:-"public-sector"}
-AWS_REGION=${REGION:-"us-east-1"}
+AWS_REGION=${REGION:-"us-west-2"}
 
 echo ""
 echo "─ CONFIGURATION ──────────────────────────────────────────────────────────────"
