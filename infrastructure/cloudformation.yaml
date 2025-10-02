@@ -523,53 +523,8 @@ Resources:
       TargetKeyId: !Ref AmplifyLogGroupKMSKey
 
   # AWS WAF WebACL for Amplify
-  AmplifyWebACL:
-    Type: AWS::WAFv2::WebACL
-    Properties:
-      Name: !Sub ${AWS::StackName}-amplify-waf
-      Description: WAF for Amplify application protection
-      Scope: CLOUDFRONT
-      DefaultAction:
-        Allow: {}
-      Rules:
-        - Name: AWSManagedRulesCommonRuleSet
-          Priority: 1
-          OverrideAction:
-            None: {}
-          Statement:
-            ManagedRuleGroupStatement:
-              VendorName: AWS
-              Name: AWSManagedRulesCommonRuleSet
-          VisibilityConfig:
-            SampledRequestsEnabled: true
-            CloudWatchMetricsEnabled: true
-            MetricName: CommonRuleSetMetric
-        - Name: AWSManagedRulesKnownBadInputsRuleSet
-          Priority: 2
-          OverrideAction:
-            None: {}
-          Statement:
-            ManagedRuleGroupStatement:
-              VendorName: AWS
-              Name: AWSManagedRulesKnownBadInputsRuleSet
-          VisibilityConfig:
-            SampledRequestsEnabled: true
-            CloudWatchMetricsEnabled: true
-            MetricName: KnownBadInputsRuleSetMetric
-      VisibilityConfig:
-        SampledRequestsEnabled: true
-        CloudWatchMetricsEnabled: true
-        MetricName: !Sub ${AWS::StackName}-amplify-waf
-
-  # AWS WAF WebACL Association with Amplify
-  AmplifyWAFAssociation:
-    Type: AWS::WAFv2::WebACLAssociation
-    DependsOn: 
-      - AmplifyWebACL
-      - AmplifyApp
-    Properties:
-      ResourceArn: !GetAtt AmplifyApp.Arn
-      WebACLArn: !GetAtt AmplifyWebACL.Arn
+  # Note: WAF WebACL resources removed - not supported for Amplify in regions other than us-east-1
+  # Amplify uses CloudFront which requires WAF resources in us-east-1
 
   AmplifyBranch:
     Type: AWS::Amplify::Branch
@@ -637,8 +592,4 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-AmplifyDomain
 
-  WAFWebACLArn:
-    Description: WAF WebACL ARN for Amplify association
-    Value: !GetAtt AmplifyWebACL.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-WAFWebACLArn
+  # WAFWebACLArn output removed - WAF resources not deployed in regions other than us-east-1
