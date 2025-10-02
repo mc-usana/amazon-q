@@ -8,21 +8,23 @@ echo ""
 echo "⏱️  Estimated deployment time: ~4 minutes"
 echo ""
 
-# Configuration
-STACK_NAME=${1:-"qbusiness-public-sector"}
-GITHUB_BRANCH=${2:-"main"}
-GITHUB_REPO=${3:-""}
-GITHUB_TOKEN=${4:-""}
-THEME_DIR=${5:-"public-sector"}
+# Configuration - filter out --disable-waf from positional parameters
+ARGS=()
 ENABLE_WAF="true"
 
-# Check for --disable-waf flag
 for arg in "$@"; do
     if [[ "$arg" == "--disable-waf" ]]; then
         ENABLE_WAF="false"
-        break
+    else
+        ARGS+=("$arg")
     fi
 done
+
+STACK_NAME=${ARGS[0]:-"qbusiness-public-sector"}
+GITHUB_BRANCH=${ARGS[1]:-"main"}
+GITHUB_REPO=${ARGS[2]:-""}
+GITHUB_TOKEN=${ARGS[3]:-""}
+THEME_DIR=${ARGS[4]:-"public-sector"}
 
 # Read region from existing .env file if it exists, otherwise use AWS_REGION or default
 if [[ -f "config/.env" ]]; then
