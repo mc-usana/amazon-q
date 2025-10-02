@@ -1,6 +1,6 @@
 # Secure Web Experiences for Amazon Q Business with AWS Amplify
 
-*Themeable Embedded Web Experiences for Public Sector Use Cases*
+*Themeable Embedded Web Experiences for Public Sector Use Case.*
 
 [![License](https://img.shields.io/badge/License-MIT--0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
