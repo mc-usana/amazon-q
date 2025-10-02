@@ -1,7 +1,7 @@
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 
 const client = new SecretsManagerClient({
-  region: process.env.REGION || process.env.AWS_REGION || 'us-east-1'
+  region: process.env.REGION || process.env.AWS_REGION || 'us-west-2'
 });
 
 export async function getQBusinessConfig() {
