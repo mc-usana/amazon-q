@@ -24,6 +24,18 @@ By leveraging Amazon Q Business's [anonymous web experience URLs](https://docs.a
 - AWS CLI configured
 - Git repository
 
+## Important: AWS WAF Regional Requirements
+
+**For AWS WAF integration with Amplify applications:**
+
+> "Notice that the AWS WAF stack must be deployed to the US East (N. Virginia) (us-east-1) Region. The Amplify application stack can be deployed to a different Region. You must create the web ACL that you want to associate with the Amplify app in the Global (CloudFront) Region. Regional web ACLs might already exist in your AWS account, but they are not compatible with Amplify."
+
+Source: [AWS Documentation - Enabling AWS WAF for an Amplify application using the AWS CDK](https://docs.aws.amazon.com/amplify/latest/userguide/amplify-waf-CDK.html)
+
+**Options:**
+- Deploy to `us-east-1` region (recommended for simplicity)
+- Deploy without WAF using `--disable-waf` parameter (see deployment options below)
+
 ## Setup
 
 **Step 1: Clone and push to your repository:**
@@ -40,7 +52,7 @@ npm install
 Deployment takes approximately 5-10 minutes.
 
 ```bash
-./scripts/deploy.sh [stack-name] [branch] [github-repo] [github-token] [theme-dir]
+./scripts/deploy.sh [stack-name] [branch] [github-repo] [github-token] [theme-dir] [--disable-waf]
 ```
 
 **Parameters:**
@@ -49,13 +61,14 @@ Deployment takes approximately 5-10 minutes.
 - `github-repo` (optional): Your GitHub repository URL (e.g., "https://github.com/username/repo")
 - `github-token` (optional): GitHub personal access token with **admin:repo_hook** scope ([create one here](https://github.com/settings/personal-access-tokens)) for automatic deployment (or see [GitHub App setup with CloudFormation](https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#setting-up-github-app-cloudformation))
 - `theme-dir` (optional): Theme directory name from `assets/themes/` (default: "public-sector")
+- `--disable-waf` (optional): Deploy without AWS WAF protection
 
-**Example with custom theme:**
+**Example with WAF disabled (any region):**
 ```bash
-./scripts/deploy.sh qbusiness-public-sector main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx" "healthcare"
+./scripts/deploy.sh qbusiness-public-sector main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx" "public-sector" --disable-waf
 ```
 
-**Example with GitHub integration:**
+**Example with WAF enabled (requires us-east-1):**
 ```bash
 ./scripts/deploy.sh qbusiness-public-sector main "https://github.com/myusername/my-repo" "ghp_xxxxxxxxxxxx"
 ```

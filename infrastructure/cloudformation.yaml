@@ -9,6 +9,14 @@ Parameters:
     Default: GovernmentAIAssistant
     AllowedPattern: ^[a-zA-Z0-9][a-zA-Z0-9_-]*$
     ConstraintDescription: Must contain only alphanumeric characters, hyphens, and underscores
+  
+  EnableWAF:
+    Description: Enable AWS WAF protection (requires deployment to us-east-1 for CLOUDFRONT scope)
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
 
   SessionDurationMinutes:
     Description: Session duration in minutes for anonymous users
@@ -46,6 +54,7 @@ Parameters:
     Default: "http://localhost:3000"
 
 Conditions:
+  EnableWAFCondition: !Equals [!Ref EnableWAF, "true"]
   HasGitHubRepo: !Not
     - !Equals
       - !Ref GitHubRepository
@@ -139,9 +148,8 @@ Resources:
             comment: "This is an access logs bucket and does not need its own access logging."
     Properties:
       BucketName: !Sub
-        - ${BucketName}-access-logs-${StackName}-${UniqueId}
-        - BucketName: !Ref ThemeBucketName
-          StackName: !Ref AWS::StackName
+        - access-logs-${StackName}-${UniqueId}
+        - StackName: !Ref AWS::StackName
           UniqueId: !Select
             - 0
             - !Split
@@ -523,8 +531,55 @@ Resources:
       TargetKeyId: !Ref AmplifyLogGroupKMSKey
 
   # AWS WAF WebACL for Amplify
-  # Note: WAF WebACL resources removed - not supported for Amplify in regions other than us-east-1
-  # Amplify uses CloudFront which requires WAF resources in us-east-1
+  AmplifyWebACL:
+    Type: AWS::WAFv2::WebACL
+    Condition: EnableWAFCondition
+    Properties:
+      Name: !Sub ${AWS::StackName}-amplify-waf
+      Description: WAF for Amplify application protection
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: CommonRuleSetMetric
+        - Name: AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 2
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: KnownBadInputsRuleSetMetric
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${AWS::StackName}-amplify-waf
+
+  # AWS WAF WebACL Association with Amplify
+  AmplifyWAFAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Condition: EnableWAFCondition
+    DependsOn: 
+      - AmplifyWebACL
+      - AmplifyApp
+    Properties:
+      ResourceArn: !GetAtt AmplifyApp.Arn
+      WebACLArn: !GetAtt AmplifyWebACL.Arn
 
   AmplifyBranch:
     Type: AWS::Amplify::Branch
@@ -592,4 +647,9 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-AmplifyDomain
 
-  # WAFWebACLArn output removed - WAF resources not deployed in regions other than us-east-1
+  WAFWebACLArn:
+    Condition: EnableWAFCondition
+    Description: WAF WebACL ARN for Amplify association
+    Value: !GetAtt AmplifyWebACL.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-WAFWebACLArn

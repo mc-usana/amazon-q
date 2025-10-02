@@ -14,7 +14,23 @@ GITHUB_BRANCH=${2:-"main"}
 GITHUB_REPO=${3:-""}
 GITHUB_TOKEN=${4:-""}
 THEME_DIR=${5:-"public-sector"}
-AWS_REGION=${REGION:-"us-west-2"}
+ENABLE_WAF="true"
+
+# Check for --disable-waf flag
+for arg in "$@"; do
+    if [[ "$arg" == "--disable-waf" ]]; then
+        ENABLE_WAF="false"
+        break
+    fi
+done
+
+# Read region from existing .env file if it exists, otherwise use AWS_REGION or default
+if [[ -f "config/.env" ]]; then
+    EXISTING_REGION=$(grep "^REGION=" config/.env | cut -d'=' -f2)
+    AWS_REGION=${AWS_REGION:-${EXISTING_REGION:-"us-east-1"}}
+else
+    AWS_REGION=${AWS_REGION:-"us-east-1"}
+fi
 
 echo ""
 echo "─ CONFIGURATION ──────────────────────────────────────────────────────────────"
@@ -28,21 +44,27 @@ echo ""
 echo ""
 echo "─ APPLICATION SETUP ──────────────────────────────────────────────────────────"
 echo ""
-# Get application name with validation
-while true; do
-    echo -n "Application name [GovAI]: "
-    read APP_NAME
-    APP_NAME=${APP_NAME:-"GovAI"}
-    # Trim spaces
-    APP_NAME=$(echo "$APP_NAME" | tr -d ' ')
-    
-    if [[ $APP_NAME =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]]; then
-        echo "✅ Application name validated: $APP_NAME"
-        break
-    else
-        echo "❌ Invalid name. Use alphanumeric, hyphens, and underscores only (no spaces)."
-    fi
-done
+# Get application name - skip prompt if GitHub integration provided
+if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
+    APP_NAME="GovAI"
+    echo "✅ Application name: $APP_NAME (auto-selected for CI/CD)"
+else
+    # Interactive mode with validation
+    while true; do
+        printf "Application name [GovAI]: "
+        read APP_NAME
+        APP_NAME=${APP_NAME:-"GovAI"}
+        # Trim spaces
+        APP_NAME=$(echo "$APP_NAME" | tr -d ' ')
+        
+        if [[ $APP_NAME =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]]; then
+            echo "✅ Application name validated: $APP_NAME"
+            break
+        else
+            echo "❌ Invalid name. Use alphanumeric, hyphens, and underscores only (no spaces)."
+        fi
+    done
+fi
 echo ""
 
 echo ""
@@ -52,7 +74,7 @@ echo "🚀 Deploying CloudFormation stack..."
 echo ""
 
 # Build parameter overrides array
-PARAM_OVERRIDES=("QBusinessApplicationName=$APP_NAME" "GitHubBranch=$GITHUB_BRANCH")
+PARAM_OVERRIDES=("QBusinessApplicationName=$APP_NAME" "GitHubBranch=$GITHUB_BRANCH" "EnableWAF=$ENABLE_WAF")
 
 if [[ -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
     PARAM_OVERRIDES+=("GitHubRepository=$GITHUB_REPO" "GitHubAccessToken=$GITHUB_TOKEN")
@@ -73,7 +95,7 @@ echo ""
 echo "─ THEME ASSETS ───────────────────────────────────────────────────────────────"
 echo ""
 echo "Uploading custom theme assets..."
-./scripts/upload-theme-assets.sh "$STACK_NAME" "$THEME_DIR"
+AWS_REGION="$AWS_REGION" ./scripts/upload-theme-assets.sh "$STACK_NAME" "$THEME_DIR"
 echo "✅ Theme assets uploaded successfully"
 echo ""
 

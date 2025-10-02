@@ -11,7 +11,14 @@ echo ""
 
 # Configuration
 STACK_NAME=${1:-"qbusiness-public-sector"}
-AWS_REGION=${AWS_REGION:-"us-east-1"}
+
+# Read region from existing .env file if it exists, otherwise use AWS_REGION or default
+if [[ -f "config/.env" ]]; then
+    EXISTING_REGION=$(grep "^REGION=" config/.env | cut -d'=' -f2)
+    AWS_REGION=${AWS_REGION:-${EXISTING_REGION:-"us-east-1"}}
+else
+    AWS_REGION=${AWS_REGION:-"us-east-1"}
+fi
 
 echo ""
 echo "─ CONFIGURATION ──────────────────────────────────────────────────────────────"
@@ -29,10 +36,16 @@ echo "• S3 bucket and all theme assets"
 echo "• Secrets Manager configuration"
 echo "• Amplify application and deployments"
 echo ""
-read -p "Continue with deletion? (y/N): " -r
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "❌ Cleanup cancelled by user"
-    exit 0
+
+# Check if running in non-interactive mode (CI/CD or automated)
+if [[ -t 0 ]]; then
+    read -p "Continue with deletion? (y/N): " -r
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "❌ Cleanup cancelled by user"
+        exit 0
+    fi
+else
+    echo "⚠️  Running in non-interactive mode - proceeding with deletion"
 fi
 
 echo ""
