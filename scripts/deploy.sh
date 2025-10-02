@@ -95,7 +95,7 @@ echo ""
 echo "─ THEME ASSETS ───────────────────────────────────────────────────────────────"
 echo ""
 echo "Uploading custom theme assets..."
-./scripts/upload-theme-assets.sh "$STACK_NAME" "$THEME_DIR"
+AWS_REGION="$AWS_REGION" ./scripts/upload-theme-assets.sh "$STACK_NAME" "$THEME_DIR"
 echo "✅ Theme assets uploaded successfully"
 echo ""
 

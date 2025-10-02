@@ -148,9 +148,8 @@ Resources:
             comment: "This is an access logs bucket and does not need its own access logging."
     Properties:
       BucketName: !Sub
-        - ${BucketName}-access-logs-${StackName}-${UniqueId}
-        - BucketName: !Ref ThemeBucketName
-          StackName: !Ref AWS::StackName
+        - access-logs-${StackName}-${UniqueId}
+        - StackName: !Ref AWS::StackName
           UniqueId: !Select
             - 0
             - !Split
