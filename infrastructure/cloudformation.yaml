@@ -9,6 +9,14 @@ Parameters:
     Default: GovernmentAIAssistant
     AllowedPattern: ^[a-zA-Z0-9][a-zA-Z0-9_-]*$
     ConstraintDescription: Must contain only alphanumeric characters, hyphens, and underscores
+  
+  EnableWAF:
+    Description: Enable AWS WAF protection (requires deployment to us-east-1 for CLOUDFRONT scope)
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
 
   SessionDurationMinutes:
     Description: Session duration in minutes for anonymous users
@@ -46,6 +54,7 @@ Parameters:
     Default: "http://localhost:3000"
 
 Conditions:
+  EnableWAFCondition: !Equals [!Ref EnableWAF, "true"]
   HasGitHubRepo: !Not
     - !Equals
       - !Ref GitHubRepository
@@ -525,10 +534,11 @@ Resources:
   # AWS WAF WebACL for Amplify
   AmplifyWebACL:
     Type: AWS::WAFv2::WebACL
+    Condition: EnableWAFCondition
     Properties:
       Name: !Sub ${AWS::StackName}-amplify-waf
       Description: WAF for Amplify application protection
-      Scope: REGIONAL
+      Scope: CLOUDFRONT
       DefaultAction:
         Allow: {}
       Rules:
@@ -564,6 +574,7 @@ Resources:
   # AWS WAF WebACL Association with Amplify
   AmplifyWAFAssociation:
     Type: AWS::WAFv2::WebACLAssociation
+    Condition: EnableWAFCondition
     DependsOn: 
       - AmplifyWebACL
       - AmplifyApp
@@ -638,6 +649,7 @@ Outputs:
       Name: !Sub ${AWS::StackName}-AmplifyDomain
 
   WAFWebACLArn:
+    Condition: EnableWAFCondition
     Description: WAF WebACL ARN for Amplify association
     Value: !GetAtt AmplifyWebACL.Arn
     Export:
