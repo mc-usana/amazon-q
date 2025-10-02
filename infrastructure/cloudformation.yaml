@@ -528,7 +528,7 @@ Resources:
     Properties:
       Name: !Sub ${AWS::StackName}-amplify-waf
       Description: WAF for Amplify application protection
-      Scope: CLOUDFRONT
+      Scope: REGIONAL
       DefaultAction:
         Allow: {}
       Rules:

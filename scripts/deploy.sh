@@ -14,7 +14,14 @@ GITHUB_BRANCH=${2:-"main"}
 GITHUB_REPO=${3:-""}
 GITHUB_TOKEN=${4:-""}
 THEME_DIR=${5:-"public-sector"}
-AWS_REGION=${AWS_REGION:-"us-east-1"}
+
+# Read region from existing .env file if it exists, otherwise use AWS_REGION or default
+if [[ -f "config/.env" ]]; then
+    EXISTING_REGION=$(grep "^REGION=" config/.env | cut -d'=' -f2)
+    AWS_REGION=${AWS_REGION:-${EXISTING_REGION:-"us-east-1"}}
+else
+    AWS_REGION=${AWS_REGION:-"us-east-1"}
+fi
 
 echo ""
 echo "─ CONFIGURATION ──────────────────────────────────────────────────────────────"
